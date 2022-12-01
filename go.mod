@@ -2,6 +2,7 @@ module github.com/dcnetio/gothreads-lib
 
 go 1.18
 
+retract  v0.0.0-20221130163453-fcc29b6b49ef
 require (
 	github.com/alecthomas/jsonschema v0.0.0-20191017121752-4bb6e3fae4f2
 	github.com/dgraph-io/badger v1.6.2
@@ -187,3 +188,4 @@ require (
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	lukechampine.com/blake3 v1.1.7 // indirect
 )
+
