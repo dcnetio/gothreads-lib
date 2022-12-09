@@ -8,13 +8,13 @@ import (
 	"github.com/dcnetio/gothreads-lib/core/thread"
 
 	"github.com/dcnetio/gothreads-lib/core/net"
+	"github.com/dcnetio/gothreads-lib/crypto"
 	pb "github.com/dcnetio/gothreads-lib/net/pb"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	format "github.com/ipfs/go-ipld-format"
 	ic "github.com/libp2p/go-libp2p/core/crypto"
 	mh "github.com/multiformats/go-multihash"
-	"github.com/textileio/crypto"
 )
 
 func init() {

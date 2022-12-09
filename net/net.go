@@ -18,6 +18,7 @@ import (
 	lstore "github.com/dcnetio/gothreads-lib/core/logstore"
 	core "github.com/dcnetio/gothreads-lib/core/net"
 	"github.com/dcnetio/gothreads-lib/core/thread"
+	sym "github.com/dcnetio/gothreads-lib/crypto/symmetric"
 	pb "github.com/dcnetio/gothreads-lib/net/pb"
 	"github.com/dcnetio/gothreads-lib/net/queue"
 	"github.com/dcnetio/gothreads-lib/net/util"
@@ -32,7 +33,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/peer"
 	pstore "github.com/libp2p/go-libp2p/core/peerstore"
 	ma "github.com/multiformats/go-multiaddr"
-	sym "github.com/textileio/crypto/symmetric"
 	"google.golang.org/grpc"
 )
 

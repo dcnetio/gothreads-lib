@@ -9,10 +9,10 @@ import (
 
 	core "github.com/dcnetio/gothreads-lib/core/logstore"
 	"github.com/dcnetio/gothreads-lib/core/thread"
+	sym "github.com/dcnetio/gothreads-lib/crypto/symmetric"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/peer"
 	pt "github.com/libp2p/go-libp2p/core/test"
-	sym "github.com/textileio/crypto/symmetric"
 )
 
 var keyBookSuite = map[string]func(kb core.KeyBook) func(*testing.T){

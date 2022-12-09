@@ -11,6 +11,7 @@ import (
 	"github.com/dcnetio/gothreads-lib/cbor"
 	core "github.com/dcnetio/gothreads-lib/core/net"
 	"github.com/dcnetio/gothreads-lib/core/thread"
+	sym "github.com/dcnetio/gothreads-lib/crypto/symmetric"
 	"github.com/dcnetio/gothreads-lib/net/api"
 	. "github.com/dcnetio/gothreads-lib/net/api/client"
 	"github.com/dcnetio/gothreads-lib/util"
@@ -20,7 +21,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/peer"
 	ma "github.com/multiformats/go-multiaddr"
 	mh "github.com/multiformats/go-multihash"
-	sym "github.com/textileio/crypto/symmetric"
 	"google.golang.org/grpc"
 )
 

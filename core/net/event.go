@@ -3,9 +3,9 @@ package net
 import (
 	"context"
 
+	"github.com/dcnetio/gothreads-lib/crypto"
 	"github.com/ipfs/go-cid"
-	"github.com/ipfs/go-ipld-format"
-	"github.com/textileio/crypto"
+	format "github.com/ipfs/go-ipld-format"
 )
 
 // Event is the Block format used by threads

@@ -13,9 +13,9 @@ import (
 	"sort"
 
 	"github.com/alecthomas/jsonschema"
+	dse "github.com/dcnetio/gothreads-lib/go-datastore-extensions"
 	ds "github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/query"
-	dse "github.com/textileio/go-datastore-extensions"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )

@@ -6,9 +6,9 @@ import (
 
 	core "github.com/dcnetio/gothreads-lib/core/logstore"
 	"github.com/dcnetio/gothreads-lib/core/thread"
+	sym "github.com/dcnetio/gothreads-lib/crypto/symmetric"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/peer"
-	sym "github.com/textileio/crypto/symmetric"
 )
 
 type memoryKeyBook struct {

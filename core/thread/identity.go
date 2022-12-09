@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dcnetio/gothreads-lib/crypto/asymmetric"
 	jwted25519 "github.com/dcnetio/gothreads-lib/jwt"
 	"github.com/gogo/status"
 	"github.com/golang-jwt/jwt"
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	mbase "github.com/multiformats/go-multibase"
-	"github.com/textileio/crypto/asymmetric"
 	"google.golang.org/grpc/codes"
 )
 

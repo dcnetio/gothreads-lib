@@ -3,10 +3,10 @@ package keytransform
 import (
 	"context"
 
+	dse "github.com/dcnetio/gothreads-lib/go-datastore-extensions"
 	ds "github.com/ipfs/go-datastore"
 	kt "github.com/ipfs/go-datastore/keytransform"
 	dsq "github.com/ipfs/go-datastore/query"
-	dse "github.com/textileio/go-datastore-extensions"
 )
 
 // TxnDatastoreExtended adds QueryExtensions to TxnDatastore.

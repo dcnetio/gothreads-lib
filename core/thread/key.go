@@ -3,8 +3,8 @@ package thread
 import (
 	"fmt"
 
+	sym "github.com/dcnetio/gothreads-lib/crypto/symmetric"
 	mbase "github.com/multiformats/go-multibase"
-	sym "github.com/textileio/crypto/symmetric"
 )
 
 var (

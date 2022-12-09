@@ -10,9 +10,9 @@ import (
 	"strings"
 
 	core "github.com/dcnetio/gothreads-lib/core/db"
+	dse "github.com/dcnetio/gothreads-lib/go-datastore-extensions"
 	ds "github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/query"
-	dse "github.com/textileio/go-datastore-extensions"
 )
 
 // Query is a json-seriable query representation.

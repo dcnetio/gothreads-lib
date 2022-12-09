@@ -12,6 +12,7 @@ import (
 	"github.com/dcnetio/gothreads-lib/core/app"
 	core "github.com/dcnetio/gothreads-lib/core/logstore"
 	badger "github.com/dcnetio/gothreads-lib/go-ds-badger"
+	"github.com/dcnetio/gothreads-lib/go-libp2p-pubsub-rpc/finalizer"
 	"github.com/dcnetio/gothreads-lib/logstore/lstoreds"
 	"github.com/dcnetio/gothreads-lib/logstore/lstorehybrid"
 	"github.com/dcnetio/gothreads-lib/logstore/lstoremem"
@@ -25,7 +26,6 @@ import (
 	"github.com/libp2p/go-libp2p/p2p/host/peerstore/pstoreds"
 	connmgr "github.com/libp2p/go-libp2p/p2p/net/connmgr"
 	ma "github.com/multiformats/go-multiaddr"
-	"github.com/textileio/go-libp2p-pubsub-rpc/finalizer"
 	"google.golang.org/grpc"
 )
 

@@ -5,12 +5,12 @@ import (
 	"fmt"
 
 	"github.com/dcnetio/gothreads-lib/core/net"
+	"github.com/dcnetio/gothreads-lib/crypto"
+	sym "github.com/dcnetio/gothreads-lib/crypto/symmetric"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	format "github.com/ipfs/go-ipld-format"
 	mh "github.com/multiformats/go-multihash"
-	"github.com/textileio/crypto"
-	sym "github.com/textileio/crypto/symmetric"
 )
 
 func init() {

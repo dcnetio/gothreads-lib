@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/dcnetio/gothreads-lib/core/thread"
+	sym "github.com/dcnetio/gothreads-lib/crypto/symmetric"
 	"github.com/gogo/protobuf/proto"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/crypto"
@@ -12,7 +13,6 @@ import (
 	ma "github.com/multiformats/go-multiaddr"
 	mh "github.com/multiformats/go-multihash"
 	varint "github.com/multiformats/go-varint"
-	sym "github.com/textileio/crypto/symmetric"
 )
 
 // customGogoType aggregates the interfaces that custom Gogo types need to implement.
