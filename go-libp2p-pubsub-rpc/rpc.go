@@ -11,7 +11,7 @@ import (
 	"github.com/ipfs/go-cid"
 	util "github.com/ipfs/go-ipfs-util"
 	cbor "github.com/ipfs/go-ipld-cbor"
-	golog "github.com/ipfs/go-log"
+	golog "github.com/ipfs/go-log/v2"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/peer"
 )

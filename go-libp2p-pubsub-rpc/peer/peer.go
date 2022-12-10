@@ -8,23 +8,23 @@ import (
 	"path/filepath"
 	"time"
 
-	badger "github.com/dcnetio/gothreads-lib/go-ds-badger3"
+	badger "github.com/dcnetio/gothreads-lib/go-ds-badger"
 	rpc "github.com/dcnetio/gothreads-lib/go-libp2p-pubsub-rpc"
 	"github.com/dcnetio/gothreads-lib/go-libp2p-pubsub-rpc/finalizer"
 	"github.com/dcnetio/gothreads-lib/go-libp2p-pubsub-rpc/peer/mdns"
 	ipfslite "github.com/hsanjuan/ipfs-lite"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
-	ipfsconfig "github.com/ipfs/go-ipfs-config"
 	format "github.com/ipfs/go-ipld-format"
-	golog "github.com/ipfs/go-log"
+	golog "github.com/ipfs/go-log/v2"
+	ipfsconfig "github.com/ipfs/kubo/config"
 	"github.com/libp2p/go-libp2p"
-	connmgr "github.com/libp2p/go-libp2p-connmgr"
-	cconnmgr "github.com/libp2p/go-libp2p-core/connmgr"
-	"github.com/libp2p/go-libp2p-core/crypto"
-	"github.com/libp2p/go-libp2p-core/host"
-	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/libp2p/go-libp2p-peerstore/pstoreds"
 	ps "github.com/libp2p/go-libp2p-pubsub"
+	cconnmgr "github.com/libp2p/go-libp2p/core/connmgr"
+	"github.com/libp2p/go-libp2p/core/crypto"
+	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/p2p/host/peerstore/pstoreds"
+	connmgr "github.com/libp2p/go-libp2p/p2p/net/connmgr"
 	"github.com/multiformats/go-multiaddr"
 )
 
@@ -133,7 +133,7 @@ func New(conf Config) (*Peer, error) {
 	fin.Add(lhost, dht)
 
 	// Create ipfslite peer
-	lpeer, err := ipfslite.New(ctx, dstore, lhost, dht, nil)
+	lpeer, err := ipfslite.New(ctx, dstore, nil, lhost, dht, nil)
 	if err != nil {
 		return nil, fin.Cleanupf("creating ipfslite peer", err)
 	}

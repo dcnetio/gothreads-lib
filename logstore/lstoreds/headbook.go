@@ -12,7 +12,7 @@ import (
 	"github.com/dcnetio/gothreads-lib/core/thread"
 	pb "github.com/dcnetio/gothreads-lib/net/pb"
 	"github.com/dcnetio/gothreads-lib/util"
-	"github.com/dgraph-io/badger"
+	"github.com/dgraph-io/badger/v3"
 	"github.com/gogo/protobuf/proto"
 	"github.com/ipfs/go-cid"
 	ds "github.com/ipfs/go-datastore"

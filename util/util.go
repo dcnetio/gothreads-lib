@@ -16,7 +16,6 @@ import (
 	"github.com/dcnetio/gothreads-lib/core/thread"
 	kt "github.com/dcnetio/gothreads-lib/db/keytransform"
 	badger "github.com/dcnetio/gothreads-lib/go-ds-badger"
-	"github.com/dgraph-io/badger/v2/options"
 	ipfslite "github.com/hsanjuan/ipfs-lite"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -52,9 +51,17 @@ func NewBadgerDatastore(dirPath, name string, lowMem bool) (kt.TxnDatastoreExten
 	}
 	opts := badger.DefaultOptions
 	if lowMem {
-		opts.TableLoadingMode = options.FileIO
+		opts.BlockCacheSize = 0
 	}
 	return badger.NewDatastore(path, &opts)
+}
+
+// NewDatastore returns a badger based datastore.
+func NewDatastore(repoPath string, opts *badger.Options) (kt.TxnDatastoreExtended, error) {
+	if err := os.MkdirAll(repoPath, os.ModePerm); err != nil {
+		return nil, err
+	}
+	return badger.NewDatastore(repoPath, opts)
 }
 
 // SetupDefaultLoggingConfig sets up a standard logging configuration.
