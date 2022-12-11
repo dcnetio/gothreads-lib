@@ -398,7 +398,7 @@ func setup(t *testing.T) (ma.Multiaddr, *Client, func()) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	client, err := NewClient(target, grpc.WithInsecure(), grpc.WithPerRPCCredentials(thread.Credentials{}))
+	client, err := NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithPerRPCCredentials(thread.Credentials{}))
 	if err != nil {
 		t.Fatal(err)
 	}
