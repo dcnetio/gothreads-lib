@@ -23,6 +23,7 @@ import (
 	ma "github.com/multiformats/go-multiaddr"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	grpcpeer "google.golang.org/grpc/peer"
 )
 
@@ -54,7 +55,7 @@ func newServer(n *net, opts ...grpc.DialOption) (*server, error) {
 
 		defaultOpts = []grpc.DialOption{
 			s.getLibp2pDialer(),
-			grpc.WithInsecure(),
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		}
 	)
 

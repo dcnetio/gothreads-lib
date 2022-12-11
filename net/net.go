@@ -1553,14 +1553,14 @@ func (n *net) ensureUniqueLog(id thread.ID, key crypto.Key, identity thread.PubK
 	}
 	var lid peer.ID
 	if key != nil {
-		switch key.(type) {
+		switch key := key.(type) {
 		case crypto.PubKey:
-			lid, err = peer.IDFromPublicKey(key.(crypto.PubKey))
+			lid, err = peer.IDFromPublicKey(key)
 			if err != nil {
 				return err
 			}
 		case crypto.PrivKey:
-			lid, err = peer.IDFromPrivateKey(key.(crypto.PrivKey))
+			lid, err = peer.IDFromPrivateKey(key)
 			if err != nil {
 				return err
 			}

@@ -4,7 +4,6 @@ package logger
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"runtime"
@@ -415,7 +414,7 @@ func generateLogPrefix(filelineFlag bool, prefixLevel int) string {
 	}
 }
 
-//InitLogger initializes the logger
+// InitLogger initializes the logger
 func InitAndCloseOther() {
 	c := logging.Config{
 		Format: logging.ColorizedOutput,
@@ -427,6 +426,6 @@ func InitAndCloseOther() {
 	logging.SetLogLevel("*", "ERROR")
 
 	os.Stderr = nil
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	Level = LEVEL_INFO
 }

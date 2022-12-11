@@ -18,8 +18,8 @@ const (
 )
 
 var (
-	cipherTextError = errors.New("malformed cipher text")
-	invalidKeyError = errors.New("invalid key")
+	errCipherText = errors.New("malformed cipher text")
+	errInvalidKey = errors.New("invalid key")
 )
 
 // Key is a wrapper for a symmetric key.
@@ -48,7 +48,7 @@ func New() *Key {
 // FromBytes returns a key by decoding bytes.
 func FromBytes(k []byte) (*Key, error) {
 	if len(k) != KeyBytes {
-		return nil, invalidKeyError
+		return nil, errInvalidKey
 	}
 	return &Key{raw: k}, nil
 }
@@ -111,7 +111,7 @@ func (k *Key) Decrypt(ciphertext []byte) ([]byte, error) {
 		return nil, err
 	}
 	if len(ciphertext) < NonceBytes {
-		return nil, cipherTextError
+		return nil, errCipherText
 	}
 	nonce := ciphertext[:NonceBytes]
 	plain, err := aesgcm.Open(nil, nonce, ciphertext[NonceBytes:], nil)

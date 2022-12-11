@@ -252,7 +252,7 @@ func TestNet_AddThreadManaged(t *testing.T) {
 		t.Fatal(err)
 	}
 	// Should work if trying to add new managed log to 'self' (note we're using n1 here)
-	sk, pk, err = crypto.GenerateEd25519Key(rand.Reader)
+	_, pk, err = crypto.GenerateEd25519Key(rand.Reader)
 	if err != nil {
 		t.Fatal(err)
 	}

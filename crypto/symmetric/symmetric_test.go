@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	. "github.com/dcnetio/gothreads-lib/crypto/symmetric"
+	"gotest.tools/assert"
 )
 
 var symmetricTestData = struct {
@@ -46,4 +47,5 @@ func TestDecrypt(t *testing.T) {
 	if err == nil {
 		t.Error("decrypt AES with bad key succeeded")
 	}
+	assert.Equal(t, plaintext, symmetricTestData.plaintext)
 }

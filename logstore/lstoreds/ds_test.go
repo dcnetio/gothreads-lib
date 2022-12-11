@@ -2,7 +2,6 @@ package lstoreds
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -145,7 +144,7 @@ func metadataBookFactory(tb testing.TB, storeFactory datastoreFactory) pt.Metada
 }
 
 func badgerStore(tb testing.TB) (ds.Batching, func()) {
-	dataPath, err := ioutil.TempDir(os.TempDir(), "badger")
+	dataPath, err := os.MkdirTemp("", "badger")
 	if err != nil {
 		tb.Fatal(err)
 	}
@@ -161,7 +160,7 @@ func badgerStore(tb testing.TB) (ds.Batching, func()) {
 }
 
 // func leveldbStore(tb testing.TB) (ds.Datastore, func()) {
-// 	dataPath, err := ioutil.TempDir(os.TempDir(), "leveldb")
+// 	dataPath, err := os.MkdirTemp(os.TempDir(), "leveldb")
 // 	if err != nil {
 // 		tb.Fatal(err)
 // 	}

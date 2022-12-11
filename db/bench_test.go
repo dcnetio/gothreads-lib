@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"testing"
@@ -58,7 +57,7 @@ func checkBenchErr(b *testing.B, err error) {
 }
 
 func createBenchDB(b *testing.B, opts ...NewOption) (*DB, func()) {
-	dir, err := ioutil.TempDir("", "")
+	dir, err := os.MkdirTemp("", "")
 	checkBenchErr(b, err)
 	n, err := common.DefaultNetwork(
 		common.WithNetBadgerPersistence(dir),

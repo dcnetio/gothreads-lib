@@ -619,11 +619,7 @@ func (mgr *AddrSubManager) AddrStream(ctx context.Context, p peer.ID, initial []
 	out := make(chan ma.Multiaddr)
 
 	mgr.mu.Lock()
-	if _, ok := mgr.subs[p]; ok {
-		mgr.subs[p] = append(mgr.subs[p], sub)
-	} else {
-		mgr.subs[p] = []*addrSub{sub}
-	}
+	mgr.subs[p] = append(mgr.subs[p], sub)
 	mgr.mu.Unlock()
 
 	sort.Sort(AddrList(initial))

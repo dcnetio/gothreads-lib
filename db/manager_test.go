@@ -142,7 +142,7 @@ func TestManager_ReloadDBs(t *testing.T) {
 		common.WithNetDebug(true),
 	)
 	checkErr(t, err)
-	man, err = NewManager(store, n, WithNewDebug(true))
+	_, err = NewManager(store, n, WithNewDebug(true))
 	checkErr(t, err)
 }
 

@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -20,7 +19,7 @@ func checkErr(t *testing.T, err error) {
 }
 
 func createTestDB(t *testing.T, opts ...NewOption) (*DB, func()) {
-	dir, err := ioutil.TempDir("", "")
+	dir, err := os.MkdirTemp("", "")
 	checkErr(t, err)
 	n, err := common.DefaultNetwork(
 		common.WithNetBadgerPersistence(dir),

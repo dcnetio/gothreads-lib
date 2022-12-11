@@ -119,9 +119,7 @@ func TestCollectionQuery(t *testing.T) {
 			}
 
 			expectedIdx := make([]int, len(q.resIdx))
-			for i := range q.resIdx {
-				expectedIdx[i] = q.resIdx[i]
-			}
+			copy(expectedIdx, q.resIdx)
 			if !q.ordered {
 				sort.Slice(res, func(i, j int) bool {
 					return strings.Compare(res[i].ID.String(), res[j].ID.String()) == -1

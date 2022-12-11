@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"io/ioutil"
 	"math/rand"
 	"net"
 	"os"
@@ -19,7 +18,7 @@ import (
 // It uses either the addr passed in as host addr, or pick an available local addr if it is empty
 func CreateTestService(addr string, debug bool) (hostAddr ma.Multiaddr, gRPCAddr ma.Multiaddr, stop func(), err error) {
 	time.Sleep(time.Second * time.Duration(rand.Intn(5)))
-	dir, err := ioutil.TempDir("", "")
+	dir, err := os.MkdirTemp("", "")
 	if err != nil {
 		return
 	}

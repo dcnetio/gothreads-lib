@@ -254,7 +254,7 @@ func (v *keyList) remove(key ds.Key) {
 	}
 }
 
-func (v *keyList) in(key ds.Key) bool {
+func (v *keyList) In(key ds.Key) bool {
 	b := key.Bytes()
 	i := sort.Search(len(*v), func(i int) bool {
 		return bytes.Compare((*v)[i], b) >= 0

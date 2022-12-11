@@ -311,7 +311,7 @@ func testBasicLogstore(ls core.Logstore) func(t *testing.T) {
 	}
 }
 
-func testLogstoreManaged(ls core.Logstore) func(t *testing.T) {
+func TestLogstoreManaged(ls core.Logstore) func(t *testing.T) {
 	return func(t *testing.T) {
 		tid := thread.NewIDV1(thread.Raw, 24)
 		addrs := getAddrs(t, 1)
@@ -334,7 +334,7 @@ func testLogstoreManaged(ls core.Logstore) func(t *testing.T) {
 
 		log, err := ls.GetLog(info.ID, info.Logs[0].ID)
 		check(t, err)
-		if log.Managed != true {
+		if !log.Managed {
 			t.Fatal("log not managed")
 		}
 
@@ -361,7 +361,7 @@ func testLogstoreManaged(ls core.Logstore) func(t *testing.T) {
 
 		log, err = ls.GetLog(tid, p)
 		check(t, err)
-		if log.Managed != true {
+		if !log.Managed {
 			t.Fatal("log not managed")
 		}
 	}

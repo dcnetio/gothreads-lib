@@ -9,7 +9,6 @@ import (
 	rpc "github.com/dcnetio/gothreads-lib/go-libp2p-pubsub-rpc"
 	"github.com/dcnetio/gothreads-lib/go-libp2p-pubsub-rpc/finalizer"
 	"github.com/dcnetio/gothreads-lib/go-libp2p-pubsub-rpc/peer"
-	golog "github.com/ipfs/go-log/v2"
 	logging "github.com/ipfs/go-log/v2"
 	core "github.com/libp2p/go-libp2p/core/peer"
 	"github.com/stretchr/testify/assert"
@@ -18,10 +17,10 @@ import (
 )
 
 func init() {
-	if err := setLogLevels(map[string]golog.LogLevel{
-		"psrpc":      golog.LevelDebug,
-		"psrpc/peer": golog.LevelDebug,
-		"psrpc/mdns": golog.LevelDebug,
+	if err := setLogLevels(map[string]logging.LogLevel{
+		"psrpc":      logging.LevelDebug,
+		"psrpc/peer": logging.LevelDebug,
+		"psrpc/mdns": logging.LevelDebug,
 	}); err != nil {
 		panic(err)
 	}

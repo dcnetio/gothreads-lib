@@ -284,9 +284,7 @@ func TestQuery(t *testing.T) {
 			}
 
 			expectedIdx := make([]int, len(q.resIdx))
-			for i := range q.resIdx {
-				expectedIdx[i] = q.resIdx[i]
-			}
+			copy(expectedIdx, q.resIdx)
 
 			if !q.ordered {
 				sort.Slice(foundBooks, func(i, j int) bool {

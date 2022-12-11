@@ -22,6 +22,7 @@ import (
 	ma "github.com/multiformats/go-multiaddr"
 	mh "github.com/multiformats/go-multihash"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func TestClient_GetHostID(t *testing.T) {
@@ -376,7 +377,7 @@ func TestClient_Close(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	client, err := NewClient(target, grpc.WithInsecure(), grpc.WithPerRPCCredentials(thread.Credentials{}))
+	client, err := NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithPerRPCCredentials(thread.Credentials{}))
 	if err != nil {
 		t.Fatal(err)
 	}

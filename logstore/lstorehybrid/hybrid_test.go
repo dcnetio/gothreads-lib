@@ -2,7 +2,6 @@ package lstorehybrid
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -103,7 +102,7 @@ func logstoreFactory(tb testing.TB, persistF, memF storeFactory) pt.LogstoreFact
 }
 
 func lstoredsBadgerF(tb testing.TB) (core.Logstore, func()) {
-	dataPath, err := ioutil.TempDir(os.TempDir(), "badger")
+	dataPath, err := os.MkdirTemp(os.TempDir(), "badger")
 	if err != nil {
 		tb.Fatal(err)
 	}
@@ -118,6 +117,9 @@ func lstoredsBadgerF(tb testing.TB) (core.Logstore, func()) {
 		backend,
 		lstoreds.DefaultOpts(),
 	)
+	if err != nil {
+		tb.Fatal(err)
+	}
 
 	closer := func() {
 		_ = lstore.Close()

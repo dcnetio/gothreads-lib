@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"errors"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"strings"
@@ -25,7 +24,7 @@ func TestE2EWithThreads(t *testing.T) {
 	t.Parallel()
 
 	// peer1: Create db1, register a collection, create and update an instance.
-	tmpDir1, err := ioutil.TempDir("", "")
+	tmpDir1, err := os.MkdirTemp("", "")
 	checkErr(t, err)
 	defer os.RemoveAll(tmpDir1)
 
@@ -75,8 +74,9 @@ func TestE2EWithThreads(t *testing.T) {
 
 	// Create a completely parallel db, which will sync with the previous one
 	// and should have the same state of dummyInstance.
-	tmpDir2, err := ioutil.TempDir("", "")
+	tmpDir2, err := os.MkdirTemp("", "")
 	checkErr(t, err)
+
 	defer os.RemoveAll(tmpDir2)
 	n2, err := common.DefaultNetwork(
 		common.WithNetBadgerPersistence(tmpDir2),
@@ -129,7 +129,7 @@ func TestE2EWithThreads(t *testing.T) {
 func TestMissingCollection(t *testing.T) {
 	t.Parallel()
 
-	tmpDir, err := ioutil.TempDir("", "")
+	tmpDir, err := os.MkdirTemp("", "")
 	checkErr(t, err)
 	defer os.RemoveAll(tmpDir)
 
@@ -166,7 +166,7 @@ func TestMissingCollection(t *testing.T) {
 
 func TestWithNewName(t *testing.T) {
 	t.Parallel()
-	tmpDir, err := ioutil.TempDir("", "")
+	tmpDir, err := os.MkdirTemp("", "")
 	checkErr(t, err)
 	defer os.RemoveAll(tmpDir)
 
@@ -215,7 +215,7 @@ func TestWithNewName(t *testing.T) {
 
 func TestWithNewEventCodec(t *testing.T) {
 	t.Parallel()
-	tmpDir, err := ioutil.TempDir("", "")
+	tmpDir, err := os.MkdirTemp("", "")
 	checkErr(t, err)
 	defer os.RemoveAll(tmpDir)
 

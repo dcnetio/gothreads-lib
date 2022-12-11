@@ -4,7 +4,6 @@ package common
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -186,14 +185,14 @@ func getIPFSHostKey(config NetConfig) (crypto.PrivKey, error) {
 		if err != nil {
 			return nil, err
 		}
-		if err = ioutil.WriteFile(pth, bytes, 0400); err != nil {
+		if err = os.WriteFile(pth, bytes, 0400); err != nil {
 			return nil, err
 		}
 		return key, nil
 	} else if err != nil {
 		return nil, err
 	} else {
-		bytes, err := ioutil.ReadFile(pth)
+		bytes, err := os.ReadFile(pth)
 		if err != nil {
 			return nil, err
 		}

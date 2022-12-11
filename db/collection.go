@@ -349,9 +349,9 @@ func (c *Collection) validWrite(identity thread.PubKey, e core.Event) error {
 		return fmt.Errorf("running write validator func: %v", err)
 	}
 	out := res.Export()
-	switch out.(type) {
+	switch out := out.(type) {
 	case bool:
-		if out.(bool) {
+		if out {
 			return nil
 		}
 		return app.ErrInvalidNetRecordBody
