@@ -17,7 +17,7 @@ import (
 	"github.com/dcnetio/gothreads-lib/logstore/lstorehybrid"
 	"github.com/dcnetio/gothreads-lib/logstore/lstoremem"
 	"github.com/dcnetio/gothreads-lib/net"
-	ipfslite "github.com/hsanjuan/ipfs-lite"
+	ipfslite "github.com/dcnetio/ipfs-lite"
 	ds "github.com/ipfs/go-datastore"
 	"github.com/libp2p/go-libp2p"
 	cconnmgr "github.com/libp2p/go-libp2p/core/connmgr"

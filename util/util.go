@@ -16,7 +16,7 @@ import (
 	"github.com/dcnetio/gothreads-lib/core/thread"
 	kt "github.com/dcnetio/gothreads-lib/db/keytransform"
 	badger "github.com/dcnetio/gothreads-lib/go-ds-badger"
-	ipfslite "github.com/hsanjuan/ipfs-lite"
+	ipfslite "github.com/dcnetio/ipfs-lite"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/libp2p/go-libp2p/core/peer"
 	ma "github.com/multiformats/go-multiaddr"

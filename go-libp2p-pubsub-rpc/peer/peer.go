@@ -12,7 +12,7 @@ import (
 	rpc "github.com/dcnetio/gothreads-lib/go-libp2p-pubsub-rpc"
 	"github.com/dcnetio/gothreads-lib/go-libp2p-pubsub-rpc/finalizer"
 	"github.com/dcnetio/gothreads-lib/go-libp2p-pubsub-rpc/peer/mdns"
-	ipfslite "github.com/hsanjuan/ipfs-lite"
+	ipfslite "github.com/dcnetio/ipfs-lite"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	format "github.com/ipfs/go-ipld-format"
 	golog "github.com/ipfs/go-log/v2"
