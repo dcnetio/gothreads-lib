@@ -10,7 +10,7 @@ import (
 	"time"
 
 	dsextensions "github.com/dcnetio/gothreads-lib/go-datastore-extensions"
-	badger "github.com/dgraph-io/badger/v3"
+	"github.com/dgraph-io/badger/v2"
 	ds "github.com/ipfs/go-datastore"
 	dsq "github.com/ipfs/go-datastore/query"
 	logger "github.com/ipfs/go-log/v2"
