@@ -10,9 +10,9 @@ import (
 
 const (
 	// Name is the protocol slug.
-	Name = "thread"
+	Name = "dcthread"
 	// Code is the protocol code.
-	Code = 406
+	Code = 808
 	// Version is the current protocol version.
 	Version = "0.0.1"
 	// Protocol is the threads protocol tag.
