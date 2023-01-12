@@ -10,13 +10,13 @@ import (
 
 const (
 	// Name is the protocol slug.
-	Name = "dcthread"
+	Name = "thread"
 	// Code is the protocol code.
-	Code = 808
+	Code = 406
 	// Version is the current protocol version.
 	Version = "0.0.1"
-	// Protocol is the threads protocol tag.
-	Protocol protocol.ID = "/" + Name + "/" + Version
+	// Protocol is the dc threads protocol tag.
+	Protocol protocol.ID = "/dc/" + Name + "/" + Version
 )
 
 var addrProtocol = ma.Protocol{
