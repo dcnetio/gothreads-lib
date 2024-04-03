@@ -350,12 +350,28 @@ func (t *Txn) Find(q *Query) ([][]byte, error) {
 				wrongField = true
 				return false
 			}
+			var fieldIInterface interface{}
+			if fieldI != (reflect.Value{}) {
+				fieldIInterface = fieldI.Interface()
+			}
 			fieldJ, err := traverseFieldPathMap(values[j].MarshaledValue, q.Sort.FieldPath)
 			if err != nil {
 				wrongField = true
 				return false
 			}
-			res, err := compare(fieldI.Interface(), fieldJ.Interface())
+			var fieldJInterface interface{}
+			if fieldJ != (reflect.Value{}) {
+				fieldJInterface = fieldJ.Interface()
+			}
+			if fieldIInterface == nil || fieldJInterface == nil {
+				wrongField = true
+				if fieldIInterface == nil && fieldJInterface == nil {
+					return true
+				} else {
+					return false
+				}
+			}
+			res, err := compare(fieldIInterface, fieldJInterface)
 			if err != nil {
 				cantCompare = true
 				return false
