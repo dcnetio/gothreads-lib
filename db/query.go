@@ -420,16 +420,24 @@ func (q *Query) match(v map[string]interface{}) (bool, error) {
 
 func compareValue(value interface{}, critVal Value) (int, error) {
 	if critVal.String != nil {
-		s, ok := value.(string)
-		if !ok {
-			return 0, &errTypeMismatch{value, critVal}
+		s := ""
+		var ok bool
+		if value != nil {
+			s, ok = value.(string)
+			if !ok {
+				return 0, &errTypeMismatch{value, critVal}
+			}
 		}
 		return strings.Compare(s, *critVal.String), nil
 	}
 	if critVal.Bool != nil {
-		b, ok := value.(bool)
-		if !ok {
-			return 0, &errTypeMismatch{value, critVal}
+		b := false
+		var ok bool
+		if value != nil {
+			b, ok = value.(bool)
+			if !ok {
+				return 0, &errTypeMismatch{value, critVal}
+			}
 		}
 		if *critVal.Bool == b {
 			return 0, nil
@@ -437,9 +445,13 @@ func compareValue(value interface{}, critVal Value) (int, error) {
 		return -1, nil
 	}
 	if critVal.Float != nil {
-		f, ok := value.(float64)
-		if !ok {
-			return 0, &errTypeMismatch{value, critVal}
+		f := 0.0
+		var ok bool
+		if value != nil {
+			f, ok = value.(float64)
+			if !ok {
+				return 0, &errTypeMismatch{value, critVal}
+			}
 		}
 		if f == *critVal.Float {
 			return 0, nil
@@ -454,7 +466,10 @@ func compareValue(value interface{}, critVal Value) (int, error) {
 }
 
 func (c *Criterion) match(value reflect.Value) (bool, error) {
-	valueInterface := value.Interface()
+	var valueInterface interface{}
+	if value != (reflect.Value{}) {
+		valueInterface = value.Interface()
+	}
 	result, err := compareValue(valueInterface, c.Value)
 	if err != nil {
 		return false, err
@@ -486,11 +501,13 @@ func traverseFieldPathMap(value map[string]interface{}, fieldPath string) (refle
 	for i := range fields {
 		m, ok := curr.(map[string]interface{})
 		if !ok {
-			return reflect.Value{}, fmt.Errorf("instance field %s doesn't exist in type %s", fieldPath, value)
+			curr = nil
+			break
 		}
 		v, ok := m[fields[i]]
 		if !ok {
-			return reflect.Value{}, fmt.Errorf("instance field %s doesn't exist in type %s", fieldPath, value)
+			curr = nil
+			break
 		}
 		curr = v
 	}
