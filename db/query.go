@@ -347,7 +347,7 @@ func (t *Txn) Find(q *Query) ([][]byte, error) {
 		sort.Slice(values, func(i, j int) bool {
 			fieldI, err := traverseFieldPathMap(values[i].MarshaledValue, q.Sort.FieldPath)
 			if err != nil {
-				wrongField = true
+				// wrongField = true
 				return false
 			}
 			var fieldIInterface interface{}
@@ -356,19 +356,23 @@ func (t *Txn) Find(q *Query) ([][]byte, error) {
 			}
 			fieldJ, err := traverseFieldPathMap(values[j].MarshaledValue, q.Sort.FieldPath)
 			if err != nil {
-				wrongField = true
-				return false
+				//	wrongField = true
+				return true
 			}
 			var fieldJInterface interface{}
 			if fieldJ != (reflect.Value{}) {
 				fieldJInterface = fieldJ.Interface()
 			}
 			if fieldIInterface == nil || fieldJInterface == nil {
-				wrongField = true
+				//	wrongField = true
 				if fieldIInterface == nil && fieldJInterface == nil {
 					return true
 				} else {
-					return false
+					if fieldIInterface == nil {
+						return false
+					} else {
+						return true
+					}
 				}
 			}
 			res, err := compare(fieldIInterface, fieldJInterface)
