@@ -348,7 +348,7 @@ func (t *Txn) Find(q *Query) ([][]byte, error) {
 			fieldI, err := traverseFieldPathMap(values[i].MarshaledValue, q.Sort.FieldPath)
 			if err != nil {
 				// wrongField = true
-				return false
+				return true
 			}
 			var fieldIInterface interface{}
 			if fieldI != (reflect.Value{}) {
@@ -357,7 +357,7 @@ func (t *Txn) Find(q *Query) ([][]byte, error) {
 			fieldJ, err := traverseFieldPathMap(values[j].MarshaledValue, q.Sort.FieldPath)
 			if err != nil {
 				//	wrongField = true
-				return true
+				return false
 			}
 			var fieldJInterface interface{}
 			if fieldJ != (reflect.Value{}) {
@@ -369,9 +369,9 @@ func (t *Txn) Find(q *Query) ([][]byte, error) {
 					return true
 				} else {
 					if fieldIInterface == nil {
-						return false
-					} else {
 						return true
+					} else {
+						return false
 					}
 				}
 			}
