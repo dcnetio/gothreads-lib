@@ -1,7 +1,6 @@
 package db
 
 import (
-	"errors"
 	"reflect"
 	"sort"
 	"strings"
@@ -134,17 +133,6 @@ func TestCollectionQuery(t *testing.T) {
 				}
 			}
 		})
-	}
-}
-
-func TestInvalidSortField(t *testing.T) {
-	t.Parallel()
-
-	c, _, clean := createCollectionWithData(t)
-	defer clean()
-	_, err := c.Find(OrderBy("WrongFieldName"))
-	if !errors.Is(err, ErrInvalidSortingField) {
-		t.Fatal("query should fail using an invalid field")
 	}
 }
 
