@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	gonet "net"
 	"sort"
 	"strings"
 	"sync"
@@ -89,9 +90,10 @@ type net struct {
 
 	store lstore.Logstore
 
-	rpc    *grpc.Server
-	server *server
-	bus    *broadcast.Broadcaster
+	rpc      *grpc.Server
+	server   *server
+	listener gonet.Listener
+	bus      *broadcast.Broadcaster
 
 	connectors map[thread.ID]*app.Connector
 	connLock   sync.RWMutex
@@ -188,6 +190,7 @@ func NewNetwork(
 	if err != nil {
 		return nil, err
 	}
+	n.listener = listener
 	go func() {
 		pb.RegisterServiceServer(n.rpc, n.server)
 		if err := n.rpc.Serve(listener); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
@@ -306,6 +309,7 @@ func (n *net) Close() (err error) {
 
 	n.bus.Discard()
 	n.cancel()
+	n.listener.Close()
 	return nil
 }
 
