@@ -122,6 +122,7 @@ func (s *server) getRecords(
 	)
 	getted := make(chan struct{})
 	gettingFlag := true
+	startWaitFlag := false
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	waitCount := 0
@@ -136,6 +137,7 @@ func (s *server) getRecords(
 				if err != nil {
 					return err
 				}
+				startWaitFlag = true
 				for lid, rs := range recs {
 					if !gettingFlag {
 						gettingFlag = true
@@ -157,6 +159,7 @@ func (s *server) getRecords(
 		wg.Wait()
 		close(getted)
 	}()
+
 Wait:
 	for {
 		select {
@@ -171,7 +174,9 @@ Wait:
 			} else {
 				waitCount = 0
 			}
-			gettingFlag = false
+			if startWaitFlag {
+				gettingFlag = false
+			}
 		case <-time.After(PullTimeout):
 			break Wait
 		}
