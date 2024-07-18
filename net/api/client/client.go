@@ -35,7 +35,7 @@ var _ core.API = (*Client)(nil)
 
 // NewClient starts the client.
 func NewClient(target string, opts ...grpc.DialOption) (*Client, error) {
-	conn, err := grpc.Dial(target, opts...)
+	conn, err := grpc.NewClient(target, opts...)
 	if err != nil {
 		return nil, err
 	}
