@@ -146,6 +146,7 @@ func NewNetwork(
 	serverOptions []grpc.ServerOption,
 	dialOptions []grpc.DialOption,
 	threadExtern core.ThreadExternal,
+	serviceExtern core.ServiceExternal,
 ) (app.Net, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, fmt.Errorf("validating config: %v", err)
@@ -191,8 +192,13 @@ func NewNetwork(
 		return nil, err
 	}
 	n.listener = listener
+	pb.RegisterServiceServer(n.rpc, n.server)
+	if serviceExtern != nil {
+		if err := serviceExtern.RegisterServiceServers(n.rpc); err != nil {
+			return nil, err
+		}
+	}
 	go func() {
-		pb.RegisterServiceServer(n.rpc, n.server)
 		if err := n.rpc.Serve(listener); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
 			log.Fatalf("serve error: %v", err)
 		}

@@ -110,7 +110,7 @@ func DefaultNetwork(opts ...NetOption) (NetBoostrapper, error) {
 		NoExchangeEdgesMigration:  config.NoExchangeEdgesMigration,
 		PubSub:                    config.PubSub,
 		Debug:                     config.Debug,
-	}, config.GRPCServerOptions, config.GRPCDialOptions, nil)
+	}, config.GRPCServerOptions, config.GRPCDialOptions, nil, nil)
 	if err != nil {
 		return nil, fin.Cleanup(err)
 	}
