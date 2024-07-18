@@ -501,11 +501,11 @@ func (s *server) dial(peerID peer.ID) (pb.ServiceClient, error) {
 	s.Unlock()
 	ctx, cancel := context.WithTimeout(context.Background(), DialTimeout)
 	defer cancel()
-	conn, err := grpc.NewClient(peerID.String(), s.opts...)
+	conn, err := grpc.NewClient(fmt.Sprintf("passthrough:///%s", peerID.String()), s.opts...)
 	if err != nil {
 		//The connection failed. Try to use external objects to assist in processing and then connect again.
 		if s.net.threadExternal != nil && s.net.threadExternal.ConnectToPeer(ctx, s.net.host, peerID) {
-			conn, err = grpc.NewClient(peerID.String(), s.opts...)
+			conn, err = grpc.NewClient(fmt.Sprintf("passthrough:///%s", peerID.String()), s.opts...)
 			if err != nil {
 				return nil, err
 			}

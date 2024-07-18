@@ -51,7 +51,6 @@ func newServer(n *net, opts ...grpc.DialOption) (*server, error) {
 		defaultOpts = []grpc.DialOption{
 			s.getLibp2pDialer(),
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
-			grpc.WithBlock(),
 		}
 	)
 
