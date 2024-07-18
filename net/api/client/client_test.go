@@ -3,7 +3,6 @@ package client_test
 import (
 	"context"
 	crand "crypto/rand"
-	"fmt"
 	"log"
 	"sync"
 	"testing"
@@ -378,7 +377,7 @@ func TestClient_Close(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	client, err := NewClient(fmt.Sprintf("passthrough:///%s", target), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithPerRPCCredentials(thread.Credentials{}))
+	client, err := NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithPerRPCCredentials(thread.Credentials{}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -399,7 +398,7 @@ func setup(t *testing.T) (ma.Multiaddr, *Client, func()) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	client, err := NewClient(fmt.Sprintf("passthrough:///%s", target), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithPerRPCCredentials(thread.Credentials{}))
+	client, err := NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithPerRPCCredentials(thread.Credentials{}))
 	if err != nil {
 		t.Fatal(err)
 	}
