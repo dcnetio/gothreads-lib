@@ -18,6 +18,7 @@ import (
 	golog "github.com/ipfs/go-log/v2"
 	ipfsconfig "github.com/ipfs/kubo/config"
 	"github.com/libp2p/go-libp2p"
+	dht "github.com/libp2p/go-libp2p-kad-dht"
 	ps "github.com/libp2p/go-libp2p-pubsub"
 	cconnmgr "github.com/libp2p/go-libp2p/core/connmgr"
 	"github.com/libp2p/go-libp2p/core/crypto"
@@ -126,7 +127,7 @@ func New(conf Config) (*Peer, error) {
 	opts = append(opts, libp2p.Peerstore(pstore))
 
 	// Setup libp2p
-	lhost, dht, err := ipfslite.SetupLibp2p(ctx, conf.PrivKey, nil, listenAddr, dstore, opts...)
+	lhost, dht, err := ipfslite.SetupLibp2p(ctx, conf.PrivKey, nil, listenAddr, dstore, dht.ModeAuto, opts...)
 	if err != nil {
 		return nil, fin.Cleanupf("setting up libp2p", err)
 	}

@@ -19,6 +19,7 @@ import (
 	ipfslite "github.com/dcnetio/ipfs-lite"
 	ds "github.com/ipfs/go-datastore"
 	"github.com/libp2p/go-libp2p"
+	dht "github.com/libp2p/go-libp2p-kad-dht"
 	cconnmgr "github.com/libp2p/go-libp2p/core/connmgr"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -82,6 +83,7 @@ func DefaultNetwork(opts ...NetOption) (NetBoostrapper, error) {
 		nil,
 		[]ma.Multiaddr{config.HostAddr},
 		peerstore,
+		dht.ModeAuto,
 		libp2p.Peerstore(pstore),
 		libp2p.ConnectionManager(config.ConnManager),
 		libp2p.DisableRelay(),
