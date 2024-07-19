@@ -194,7 +194,7 @@ func NewNetwork(
 	n.listener = listener
 	pb.RegisterServiceServer(n.rpc, n.server)
 	if serviceExtern != nil {
-		if err := serviceExtern.RegisterServiceServers(n.rpc); err != nil {
+		if err := serviceExtern.RegisterServiceServers(h, n.rpc); err != nil {
 			return nil, err
 		}
 	}

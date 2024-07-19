@@ -16,5 +16,5 @@ type ThreadExternal interface {
 }
 
 type ServiceExternal interface {
-	RegisterServiceServers(s *grpc.Server) (err error)
+	RegisterServiceServers(h host.Host, s *grpc.Server) (err error)
 }
