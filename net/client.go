@@ -501,11 +501,13 @@ func (s *server) dial(peerID peer.ID) (pb.ServiceClient, error) {
 	s.Unlock()
 	ctx, cancel := context.WithTimeout(context.Background(), DialTimeout)
 	defer cancel()
-	conn, err := grpc.NewClient(fmt.Sprintf("passthrough:///%s", peerID.String()), s.opts...)
+	conn, err := NewGrpcClientWithBlock(ctx, peerID.String(), s.opts...)
 	if err != nil {
 		//The connection failed. Try to use external objects to assist in processing and then connect again.
 		if s.net.threadExternal != nil && s.net.threadExternal.ConnectToPeer(ctx, s.net.host, peerID) {
-			conn, err = grpc.NewClient(fmt.Sprintf("passthrough:///%s", peerID.String()), s.opts...)
+			nctx, ncancel := context.WithTimeout(context.Background(), DialTimeout)
+			defer ncancel()
+			conn, err = NewGrpcClientWithBlock(nctx, peerID.String(), s.opts...)
 			if err != nil {
 				return nil, err
 			}
@@ -539,5 +541,24 @@ func (s *server) getLibp2pDialer() grpc.DialOption {
 func withErrLog(pid peer.ID, f func(pid peer.ID) error) {
 	if err := f(pid); err != nil {
 		log.Error(err.Error())
+	}
+}
+
+func NewGrpcClientWithBlock(ctx context.Context, target string, opts ...grpc.DialOption) (conn *grpc.ClientConn, err error) {
+	conn, err = grpc.NewClient(fmt.Sprintf("passthrough:///%s", target), opts...)
+	if err != nil {
+		return
+	}
+	for {
+		s := conn.GetState()
+		if s == connectivity.Idle {
+			conn.Connect()
+		}
+		if s == connectivity.Ready {
+			return conn, nil
+		}
+		if !conn.WaitForStateChange(ctx, s) {
+			return nil, ctx.Err()
+		}
 	}
 }
