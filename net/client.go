@@ -558,6 +558,9 @@ func NewGrpcClientWithBlock(ctx context.Context, target string, opts ...grpc.Dia
 			return conn, nil
 		}
 		if !conn.WaitForStateChange(ctx, s) {
+			if ctx.Err() == nil {
+				return nil, fmt.Errorf("grpc client connection failed")
+			}
 			return nil, ctx.Err()
 		}
 	}
