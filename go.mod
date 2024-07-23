@@ -24,7 +24,7 @@ require (
 	github.com/ipfs/go-log/v2 v2.5.1
 	github.com/ipfs/kubo v0.27.0
 	github.com/jbenet/goprocess v0.1.4
-	github.com/libp2p/go-libp2p v0.35.3
+	github.com/libp2p/go-libp2p v0.35.4
 	github.com/libp2p/go-libp2p-gostream v0.6.0
 	github.com/libp2p/go-libp2p-kad-dht v0.25.2
 	github.com/libp2p/go-libp2p-pubsub v0.11.0
