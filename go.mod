@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/alecthomas/jsonschema v0.0.0-20191017121752-4bb6e3fae4f2
-	github.com/dcnetio/ipfs-lite v1.1.13
+	github.com/dcnetio/ipfs-lite v1.1.15
 	github.com/dgtony/collections v0.1.6
 	github.com/dop251/goja v0.0.0-20221118162653-d4bf6fde1b86
 	github.com/evanphx/json-patch v0.5.2
