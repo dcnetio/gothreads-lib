@@ -61,8 +61,8 @@ github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c h1:pFUpOrbxDR
 github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c/go.mod h1:6UhI8N9EjYm1c2odKpFpAYeR8dsBeM7PtzQhRgxRr9U=
 github.com/dcnetio/badger v1.0.2 h1:7gXThA6Sebb5SdkFtSu7/pORtNjSHImRR2QoRAkDgWc=
 github.com/dcnetio/badger v1.0.2/go.mod h1:WfSdckkl32IQ1Sd2aKbCjokC07L/ZpOgOgVKfndiZ9s=
-github.com/dcnetio/ipfs-lite v1.1.13 h1:uX22JXEAdPT2Cn6C3zE1ra16ZPolGrOw5DheC6lJuBc=
-github.com/dcnetio/ipfs-lite v1.1.13/go.mod h1:mcEeVMjGRMtTPRYubBp4DX6TTJg8Xk4u6htzRiNpTGg=
+github.com/dcnetio/ipfs-lite v1.1.15 h1:ttbqTpZDySFTDArMPqX2PPDpmOpk2fN5f0M9XIhnlIg=
+github.com/dcnetio/ipfs-lite v1.1.15/go.mod h1:4yDK0RQL4wK843GMdUYPi+JWYesDHP1/Xw0oai/7kHk=
 github.com/decred/dcrd/crypto/blake256 v1.0.1 h1:7PltbUIQB7u/FfZ39+DGa/ShuMyJ5ilcvdfma9wOH6Y=
 github.com/decred/dcrd/crypto/blake256 v1.0.1/go.mod h1:2OfgNZ5wDpcsFmHmCK5gZTPcCXqlm2ArzUIkw9czNJo=
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 h1:rpfIENRNNilwHwZeG5+P150SMrnNEcHYvcCuK6dPZSg=
