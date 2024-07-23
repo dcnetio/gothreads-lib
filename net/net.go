@@ -531,7 +531,7 @@ type timestampedRecord struct {
 func (n *net) pullThread(ctx context.Context, tid thread.ID) error {
 	ts := n.semaphores.Get(semaThreadUpdate(tid))
 	ts.Acquire()
-	recs, err := n.pullThreadDeal(ctx, tid)
+	recs, err := n.pullThreadDeal(tid)
 	ts.Release()
 	if err != nil {
 		return err
@@ -600,7 +600,7 @@ func (n *net) pullThread(ctx context.Context, tid thread.ID) error {
 }
 
 // pullThread for the new records. This method is thread-safe.
-func (n *net) pullThreadDeal(ctx context.Context, tid thread.ID) (map[peer.ID]peerRecords, error) {
+func (n *net) pullThreadDeal(tid thread.ID) (map[peer.ID]peerRecords, error) {
 	offsets, peers, err := n.threadOffsets(tid)
 	if err != nil {
 		return nil, err

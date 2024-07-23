@@ -121,15 +121,9 @@ func (s *server) getRecords(
 		wg sync.WaitGroup
 	)
 	getted := make(chan struct{})
-	gettingFlag := true
-	startWaitFlag := false
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-	waitCount := 0
 	// Pull from every peer
 	for _, p := range peers {
 		wg.Add(1)
-
 		go withErrLog(p, func(pid peer.ID) error {
 			defer wg.Done()
 			return s.net.queueGetRecords.Call(pid, tid, func(ctx context.Context, pid peer.ID, tid thread.ID) error {
@@ -137,20 +131,13 @@ func (s *server) getRecords(
 				if err != nil {
 					return err
 				}
-				startWaitFlag = true
 				for lid, rs := range recs {
-					if !gettingFlag {
-						gettingFlag = true
-					}
 					rc.UpdateHeadCounter(lid, rs.counter)
 					for _, rec := range rs.records {
 						rc.Store(lid, rec)
 					}
 				}
-
-				if len(recs) == int(limit) { // If we got the max number of records, we're done
-					getted <- struct{}{}
-				}
+				getted <- struct{}{}
 				return nil
 			})
 		})
@@ -160,26 +147,9 @@ func (s *server) getRecords(
 		close(getted)
 	}()
 
-Wait:
-	for {
-		select {
-		case <-getted:
-			break Wait
-		case <-ticker.C:
-			if !gettingFlag {
-				waitCount++
-				if waitCount > 5 { //超过5秒没有获取到数据,直接跳出
-					break Wait
-				}
-			} else {
-				waitCount = 0
-			}
-			if startWaitFlag {
-				gettingFlag = false
-			}
-		case <-time.After(PullTimeout):
-			break Wait
-		}
+	select {
+	case <-getted:
+	case <-time.After(PullTimeout):
 	}
 
 	return rc.List()
