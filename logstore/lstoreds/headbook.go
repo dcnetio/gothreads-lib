@@ -3,7 +3,6 @@ package lstoreds
 import (
 	"context"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"math/rand"
 	"time"
@@ -179,7 +178,7 @@ func (hb *dsHeadBook) HeadsEdge(tid thread.ID) (uint64, error) {
 		edge, err := hb.getEdge(tid, key)
 		if err == nil {
 			return edge, nil
-		} else if !errors.Is(err, badger.ErrConflict) {
+		} else if err.Error() != badger.ErrConflict.Error() {
 			return 0, err
 		}
 		time.Sleep(time.Duration(50*attempt+rand.Intn(30)) * time.Millisecond)

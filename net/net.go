@@ -631,7 +631,7 @@ func (n *net) pullThreadDeal(tid thread.ID) (map[peer.ID]peerRecords, error) {
 					Counter: rs.counter,
 				}
 			}
-			if len(rs.records) == int(n.conf.NetPullingLimit) {
+			if len(rs.records) >= int(n.conf.NetPullingLimit) {
 				continueFlag = true
 			}
 		}

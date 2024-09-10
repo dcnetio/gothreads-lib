@@ -137,7 +137,7 @@ func (s *server) getRecords(
 						rc.Store(lid, rec)
 					}
 				}
-				getted <- struct{}{}
+				getted <- struct{}{} // If we got all records from one peer, we're done
 				return nil
 			})
 		})
@@ -149,7 +149,7 @@ func (s *server) getRecords(
 
 	select {
 	case <-getted:
-	case <-time.After(PullTimeout):
+	case <-time.After(PullTimeout * 3):
 	}
 
 	return rc.List()
