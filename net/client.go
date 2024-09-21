@@ -120,13 +120,13 @@ func (s *server) getRecords(
 		rc = newRecordCollector()
 		wg sync.WaitGroup
 	)
-	getted := make(chan struct{})
+	getted := make(chan struct{}, len(peers))
 	// Pull from every peer
 	for _, p := range peers {
 		wg.Add(1)
 		go withErrLog(p, func(pid peer.ID) error {
-			defer wg.Done()
 			return s.net.queueGetRecords.Call(pid, tid, func(ctx context.Context, pid peer.ID, tid thread.ID) error {
+				defer wg.Done()
 				recs, err := s.getRecordsFromPeer(ctx, tid, pid, req, sk)
 				if err != nil {
 					return err
@@ -137,7 +137,9 @@ func (s *server) getRecords(
 						rc.Store(lid, rec)
 					}
 				}
-				getted <- struct{}{} // If we got all records from one peer, we're done
+				if len(recs) > 0 {
+					getted <- struct{}{} // If we got all records from one peer, we're done
+				}
 				return nil
 			})
 		})
@@ -266,7 +268,7 @@ func (s *server) getRecordsFromPeer(
 			counter: counter,
 		}
 	}
-
+	log.Debugf("getting records from %s success ...", pid)
 	return recs, nil
 }
 

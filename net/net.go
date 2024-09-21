@@ -630,9 +630,9 @@ func (n *net) pullThreadDeal(tid thread.ID) (map[peer.ID]peerRecords, error) {
 					ID:      record.Cid(),
 					Counter: rs.counter,
 				}
-			}
-			if len(rs.records) >= int(n.conf.NetPullingLimit) {
-				continueFlag = true
+				if len(rs.records) >= int(n.conf.NetPullingLimit) {
+					continueFlag = true
+				}
 			}
 		}
 		if !continueFlag {
