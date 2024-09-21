@@ -218,7 +218,7 @@ func (s *server) getRecordsFromPeer(
 	reply, err := client.GetRecords(cctx, req)
 	if err != nil {
 		log.Warnf("get records from %s failed: %s", pid, err)
-		return recs, nil
+		return recs, err
 	}
 
 	for _, l := range reply.Logs {
