@@ -120,8 +120,12 @@ func (s *server) getRecords(
 		rc = newRecordCollector()
 		wg sync.WaitGroup
 	)
+	needGetted := 2
+	if len(peers) < 2 {
+		needGetted = len(peers)
+	}
 	getted := make(chan struct{}, len(peers))
-	var resRecNumMap sync.Map
+	gettedPeers := 0
 	// Pull from every peer
 	for _, p := range peers {
 		wg.Add(1)
@@ -132,29 +136,15 @@ func (s *server) getRecords(
 				if err != nil {
 					return err
 				}
-				resNum := 0
-				resRecNumMap.Store(pid, resNum)
 				for lid, rs := range recs {
-					resNum++
-					resRecNumMap.Store(pid, resNum)
 					rc.UpdateHeadCounter(lid, rs.counter)
 					for _, rec := range rs.records {
 						rc.Store(lid, rec)
 					}
 				}
-				// 等待3秒,如果没有收到新的记录,则认为当前节点已经收到所有记录
-				time.Sleep(3 * time.Second)
-				//遍历resRecNumMap,如果没有大于本身的值,则认为当前节点已经收到所有记录
-				var isGetted = true
-				resRecNumMap.Range(func(key, value interface{}) bool {
-					if value.(int) > resNum {
-						isGetted = false
-						return false
-					}
-					return true
-				})
-
-				if isGetted && len(recs) > 0 {
+				gettedPeers++
+				time.Sleep(time.Second * 1) // Sleep to avoid too many concurrent requests
+				if len(recs) > 0 && gettedPeers >= needGetted {
 					getted <- struct{}{} // If we got all records from one peer, we're done
 				}
 				return nil
@@ -168,7 +158,7 @@ func (s *server) getRecords(
 
 	select {
 	case <-getted:
-	case <-time.After(PullTimeout * 3):
+	case <-time.After(PullTimeout * 2):
 	}
 
 	return rc.List()
