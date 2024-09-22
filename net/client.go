@@ -121,6 +121,7 @@ func (s *server) getRecords(
 		wg sync.WaitGroup
 	)
 	getted := make(chan struct{}, len(peers))
+	var resRecNumMap sync.Map
 	// Pull from every peer
 	for _, p := range peers {
 		wg.Add(1)
@@ -131,13 +132,29 @@ func (s *server) getRecords(
 				if err != nil {
 					return err
 				}
+				resNum := 0
+				resRecNumMap.Store(pid, resNum)
 				for lid, rs := range recs {
+					resNum++
+					resRecNumMap.Store(pid, resNum)
 					rc.UpdateHeadCounter(lid, rs.counter)
 					for _, rec := range rs.records {
 						rc.Store(lid, rec)
 					}
 				}
-				if len(recs) > 0 {
+				// 等待3秒,如果没有收到新的记录,则认为当前节点已经收到所有记录
+				time.Sleep(3 * time.Second)
+				//遍历resRecNumMap,如果没有大于本身的值,则认为当前节点已经收到所有记录
+				var isGetted = true
+				resRecNumMap.Range(func(key, value interface{}) bool {
+					if value.(int) > resNum {
+						isGetted = false
+						return false
+					}
+					return true
+				})
+
+				if isGetted && len(recs) > 0 {
 					getted <- struct{}{} // If we got all records from one peer, we're done
 				}
 				return nil
