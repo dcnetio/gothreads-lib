@@ -172,7 +172,7 @@ func (jp *jsonPatcher) Reduce(
 			}
 			actions[i] = core.ReduceAction{Type: core.Save, Collection: e.Collection(), InstanceID: e.InstanceID()}
 			log.Debug("\tsave operation applied")
-			//to do need delete for release
+			//todo need delete for release
 		case del:
 			value, err := txn.Get(context.Background(), key)
 			if err != nil {

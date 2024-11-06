@@ -1207,6 +1207,10 @@ func (n *net) putRecords(ctx context.Context, tid thread.ID, lid peer.ID, recs [
 				// 2. Rollback log head to the previous record. In this case record handling will be retried until
 				//    success, but reducers must guarantee its idempotence and there is a chance of getting stuck
 				//    with bad event and not making any progress at all.
+				if strings.HasPrefix(err.Error(), "cant't create already existent instance") { // Skip the current record if it already exists and continue processing subsequent records
+
+					continue
+				}
 				return fmt.Errorf("handling record failed: %w", err)
 			}
 		}
