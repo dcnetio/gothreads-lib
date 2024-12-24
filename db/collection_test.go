@@ -428,7 +428,7 @@ func TestEmptySchema(t *testing.T) {
 		Schema: schema,
 	})
 	if err != ErrInvalidCollectionSchema {
-		t.Fatalf("expected to throw ErrInvalidCollectionSchema error")
+		t.Fatal("expected to throw ErrInvalidCollectionSchema error")
 	}
 }
 
@@ -1220,15 +1220,15 @@ func TestDeleteInstance(t *testing.T) {
 
 	_, err = c.FindByID(res[0])
 	if err != ErrInstanceNotFound {
-		t.Fatalf("FindByID: instance shouldn't exist")
+		t.Fatal("FindByID: instance shouldn't exist")
 	}
 	if exist, err := c.Has(res[0]); exist || err != nil {
-		t.Fatalf("Has: instance shouldn't exist")
+		t.Fatal("Has: instance shouldn't exist")
 	}
 
 	// Try to delete again
 	if err = c.Delete(res[0]); err != nil {
-		t.Fatalf("should be able to ignore deleting non-existent instances")
+		t.Fatal("should be able to ignore deleting non-existent instances")
 	}
 }
 

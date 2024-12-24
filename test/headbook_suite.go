@@ -144,7 +144,7 @@ func testHeadBookClearHeads(hb core.HeadBook) func(t *testing.T) {
 			}
 
 			if len(heads) > 0 {
-				t.Fatalf("heads not empty after clear")
+				t.Fatal("heads not empty after clear")
 			}
 		}
 	}

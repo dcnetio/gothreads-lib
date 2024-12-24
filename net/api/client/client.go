@@ -318,7 +318,7 @@ func (c *Client) Subscribe(ctx context.Context, opts ...core.SubOption) (<-chan 
 					log.Fatalf("error getting thread: %v", err)
 				}
 				if info.Key.Service() == nil {
-					log.Fatalf("service-key not found")
+					log.Fatal("service-key not found")
 				}
 				sk = info.Key.Service()
 				threads[threadID] = sk

@@ -71,7 +71,7 @@ func TestNet_CreateRecord(t *testing.T) {
 			t.Fatal(err)
 		}
 		if r1.Value() == nil {
-			t.Fatalf("expected node to not be nil")
+			t.Fatal("expected node to not be nil")
 		}
 
 		r2, err := n.CreateRecord(ctx, info.ID, body)
@@ -79,7 +79,7 @@ func TestNet_CreateRecord(t *testing.T) {
 			t.Fatal(err)
 		}
 		if r2.Value() == nil {
-			t.Fatalf("expected node to not be nil")
+			t.Fatal("expected node to not be nil")
 		}
 
 		if r1.LogID().String() != r2.LogID().String() {
@@ -102,7 +102,7 @@ func TestNet_CreateRecord(t *testing.T) {
 		}
 
 		if body.String() != back.String() {
-			t.Fatalf("retrieved body does not equal input body")
+			t.Fatal("retrieved body does not equal input body")
 		}
 	})
 }

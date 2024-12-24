@@ -122,7 +122,7 @@ func TestE2EWithThreads(t *testing.T) {
 	util.InstanceFromJSON(dummy2JSON, dummy2Instance)
 
 	if dummy2Instance.Name != dummyInstance.Name || dummy2Instance.Counter != dummyInstance.Counter {
-		t.Fatalf("instances of both peers must be equal after sync")
+		t.Fatal("instances of both peers must be equal after sync")
 	}
 }
 
@@ -244,7 +244,7 @@ func TestWithNewEventCodec(t *testing.T) {
 	checkErr(t, err)
 
 	if !ec.called {
-		t.Fatalf("custom event codec wasn't called")
+		t.Fatal("custom event codec wasn't called")
 	}
 
 	info, err := d.GetDBInfo()

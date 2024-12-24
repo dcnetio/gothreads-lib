@@ -53,7 +53,7 @@ func testMetadataBookInt64(mb core.ThreadMetadata) func(*testing.T) {
 				t.Fatalf(errStrGet, key, err)
 			}
 			if v == nil {
-				t.Fatalf(errStrValueShouldExist)
+				t.Fatal(errStrValueShouldExist)
 			}
 			if *v != value {
 
@@ -78,7 +78,7 @@ func testMetadataBookString(mb core.ThreadMetadata) func(*testing.T) {
 				t.Fatalf(errStrGet, key, err)
 			}
 			if v == nil {
-				t.Fatalf(errStrValueShouldExist)
+				t.Fatal(errStrValueShouldExist)
 			}
 			if *v != value {
 
@@ -103,7 +103,7 @@ func testMetadataBookBytes(mb core.ThreadMetadata) func(*testing.T) {
 				t.Fatalf(errStrGet, key, err)
 			}
 			if v == nil {
-				t.Fatalf(errStrValueShouldExist)
+				t.Fatal(errStrValueShouldExist)
 			}
 			if !bytes.Equal(*v, value) {
 				t.Fatalf(errStrValueMatch, value, v)
@@ -124,7 +124,7 @@ func testMetadataBookBytes(mb core.ThreadMetadata) func(*testing.T) {
 				t.Fatalf(errStrGet, key, err)
 			}
 			if v == nil {
-				t.Fatalf(errStrValueShouldExist)
+				t.Fatal(errStrValueShouldExist)
 			}
 			if !bytes.Equal(*v, insertedValue) {
 				t.Fatalf(errStrValueMatch, value, v)
@@ -140,7 +140,7 @@ func testMetadataBookNotFound(mb core.ThreadMetadata) func(*testing.T) {
 			tid := thread.NewIDV1(thread.Raw, 24)
 
 			if v, err := mb.GetInt64(tid, "textile"); v != nil || err != nil {
-				t.Fatalf(errStrNotFoundKey)
+				t.Fatal(errStrNotFoundKey)
 			}
 		})
 		t.Run("String", func(t *testing.T) {
@@ -148,7 +148,7 @@ func testMetadataBookNotFound(mb core.ThreadMetadata) func(*testing.T) {
 			tid := thread.NewIDV1(thread.Raw, 24)
 
 			if v, err := mb.GetInt64(tid, "textile"); v != nil || err != nil {
-				t.Fatalf(errStrNotFoundKey)
+				t.Fatal(errStrNotFoundKey)
 			}
 		})
 		t.Run("Bytes", func(t *testing.T) {
@@ -156,7 +156,7 @@ func testMetadataBookNotFound(mb core.ThreadMetadata) func(*testing.T) {
 			tid := thread.NewIDV1(thread.Raw, 24)
 
 			if v, err := mb.GetInt64(tid, "textile"); v != nil || err != nil {
-				t.Fatalf(errStrNotFoundKey)
+				t.Fatal(errStrNotFoundKey)
 			}
 		})
 	}
@@ -178,7 +178,7 @@ func testClearMetadata(mb core.ThreadMetadata) func(*testing.T) {
 			t.Fatalf(errStrGet, key, err)
 		}
 		if v != nil {
-			t.Fatalf(errStrValueShouldNotExist)
+			t.Fatal(errStrValueShouldNotExist)
 		}
 	}
 }

@@ -481,7 +481,7 @@ func compareValue(value interface{}, critVal Value) (int, error) {
 		}
 		return 1, nil
 	}
-	log.Fatalf("no underlying value for criterion was provided")
+	log.Fatal("no underlying value for criterion was provided")
 	return 0, nil
 }
 
