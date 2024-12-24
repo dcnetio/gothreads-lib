@@ -606,6 +606,15 @@ func (n *net) pullThreadDeal(tid thread.ID) (map[peer.ID]peerRecords, error) {
 		return nil, err
 	}
 	if n.threadExternal != nil { //通过外部方式确定备份节点的位置
+		//预下载记录处理,一般由外部直接通过文件解析方式更新数据库到对应的状态,这样节省网络传输与日志回溯的时间
+		if dealFlag, err := n.threadExternal.PreloadThread(n.ctx, tid); err == nil { //
+			if dealFlag { //回调已经处理过,offsets已经更新
+				offsets, peers, err = n.threadOffsets(tid)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
 		if extPeers, err := n.threadExternal.GetPeers(n.ctx, tid); err == nil && len(extPeers) > 0 {
 			peers = extPeers
 		}
@@ -1207,11 +1216,12 @@ func (n *net) putRecords(ctx context.Context, tid thread.ID, lid peer.ID, recs [
 				// 2. Rollback log head to the previous record. In this case record handling will be retried until
 				//    success, but reducers must guarantee its idempotence and there is a chance of getting stuck
 				//    with bad event and not making any progress at all.
-				if strings.HasPrefix(err.Error(), "cant't create already existent instance") { // Skip the current record if it already exists and continue processing subsequent records
+				// if strings.HasPrefix(err.Error(), "cant't create already existent instance") { // Skip the current record if it already exists and continue processing subsequent records
 
-					continue
-				}
-				return fmt.Errorf("handling record failed: %w", err)
+				// 	continue
+				// }
+				continue
+				//return fmt.Errorf("handling record failed: %w", err) //继续处理接下来的记录,不报错先
 			}
 		}
 

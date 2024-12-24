@@ -13,6 +13,7 @@ type ThreadExternal interface {
 	// GetPeers get peers that thread stored.
 	GetPeers(ctx context.Context, id thread.ID) ([]peer.ID, error)
 	ConnectToPeer(ctx context.Context, h host.Host, pid peer.ID) bool
+	PreloadThread(ctx context.Context, id thread.ID) (dealFlag bool, err error) //
 }
 
 type ServiceExternal interface {
