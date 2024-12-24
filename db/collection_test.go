@@ -802,13 +802,13 @@ func TestGetInstance(t *testing.T) {
 
 		// Should have a "readonly" _mod/Mod field
 		if foundInstance.Mod == 0 {
-			t.Fatalf(errInvalidInstanceState)
+			t.Fatal(errInvalidInstanceState)
 		}
 		// Update Mod because we know it won't match otherwise
 		newPersonInstance.Mod = foundInstance.Mod
 
 		if !reflect.DeepEqual(newPersonInstance, foundInstance) {
-			t.Fatalf(errInvalidInstanceState)
+			t.Fatal(errInvalidInstanceState)
 		}
 	})
 	t.Run("WithReadTx", func(t *testing.T) {
@@ -824,13 +824,13 @@ func TestGetInstance(t *testing.T) {
 
 		// Should have a "readonly" _mod/Mod field
 		if foundInstance.Mod == 0 {
-			t.Fatalf(errInvalidInstanceState)
+			t.Fatal(errInvalidInstanceState)
 		}
 		// Update Mod because we know it won't match otherwise
 		newPersonInstance.Mod = foundInstance.Mod
 
 		if !reflect.DeepEqual(newPersonInstance, foundInstance) {
-			t.Fatalf(errInvalidInstanceState)
+			t.Fatal(errInvalidInstanceState)
 		}
 	})
 	t.Run("WithWriteTx", func(t *testing.T) {
@@ -845,7 +845,7 @@ func TestGetInstance(t *testing.T) {
 		util.InstanceFromJSON(found, foundInstance)
 
 		if !reflect.DeepEqual(newPersonInstance, foundInstance) {
-			t.Fatalf(errInvalidInstanceState)
+			t.Fatal(errInvalidInstanceState)
 		}
 	})
 }
@@ -1071,11 +1071,11 @@ func TestSaveInstance(t *testing.T) {
 		person := &Person{}
 		util.InstanceFromJSON(instance, person)
 		if person.ID != res[0] || person.Age != 42 || person.Name != "Bob" {
-			t.Fatalf(errInvalidInstanceState)
+			t.Fatal(errInvalidInstanceState)
 		}
 		// Should have a "readonly" _mod/Mod field
 		if person.Mod == 0 {
-			t.Fatalf(errInvalidInstanceState)
+			t.Fatal(errInvalidInstanceState)
 		}
 	})
 	t.Run("SaveNonExistant", func(t *testing.T) {
@@ -1117,7 +1117,7 @@ func TestSaveInstance(t *testing.T) {
 		person := &Person{}
 		util.InstanceFromJSON(instance, person)
 		if person.ID != ID || person.Age != 44 || person.Name != "Bob" {
-			t.Fatalf(errInvalidInstanceState)
+			t.Fatal(errInvalidInstanceState)
 		}
 	})
 }
@@ -1152,7 +1152,7 @@ func TestModTagIncrement(t *testing.T) {
 
 			// Should have a "readonly" _mod/Mod field that is not zero
 			if p.Mod == 0 {
-				t.Fatalf(errInvalidInstanceState)
+				t.Fatal(errInvalidInstanceState)
 			}
 
 			p.Mod = 0 // Try to make it zero again
@@ -1165,7 +1165,7 @@ func TestModTagIncrement(t *testing.T) {
 		person := &Person{}
 		util.InstanceFromJSON(instance, person)
 		if person.ID != res[0] || person.Age != 42 || person.Name != "Alice" || person.Mod == 0 {
-			t.Fatalf(errInvalidInstanceState)
+			t.Fatal(errInvalidInstanceState)
 		}
 	})
 	t.Run("WithoutModField", func(t *testing.T) {
@@ -1192,7 +1192,7 @@ func TestModTagIncrement(t *testing.T) {
 		util.InstanceFromJSON(instance, dog)
 		// Should have a "readonly" _mod/Mod field
 		if dog.Mod == 0 {
-			t.Fatalf(errInvalidInstanceState)
+			t.Fatal(errInvalidInstanceState)
 		}
 	})
 }
@@ -1274,6 +1274,6 @@ func assertPersonInCollection(t *testing.T, c *Collection, personBytes []byte) {
 	// Hack to ensure _mod is always updated and equal
 	person.Mod = p.Mod
 	if !reflect.DeepEqual(person, p) {
-		t.Fatalf(errInvalidInstanceState)
+		t.Fatal(errInvalidInstanceState)
 	}
 }

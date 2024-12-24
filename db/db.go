@@ -594,6 +594,50 @@ func defaultIndexFunc(d *DB) func(collection string, key ds.Key, oldData, newDat
 		return c.indexAdd(txn, key, newData)
 	}
 }
+func (d *DB) RebuildIndex(collection string, field string, uniqueFlag bool) error {
+	d.lock.Lock()
+	defer d.lock.Unlock()
+	log.Debugf("rebuilding index %s in collection %s in %s", field, collection, d.name)
+	//遍历collection所有记录
+	c := d.collections[collection]
+	if c == nil {
+		return ErrCollectionNotFound
+	}
+	txn, err := d.datastore.NewTransactionExtended(context.Background(), false)
+	if err != nil {
+		return fmt.Errorf("error building internal query: %v", err)
+	}
+	defer txn.Discard(context.Background())
+	q := &Query{}
+	iter, err := newIterator(txn, c.baseKey(), q)
+	if err != nil {
+		return err
+	}
+	defer iter.Close()
+	index := Index{Path: field, Unique: uniqueFlag}
+	for {
+		res, ok := iter.NextSync()
+		if !ok {
+			break
+		}
+		key := ds.NewKey(res.Key)
+		value := res.Value
+		if err = c.indexUpdate(index.Path, index, txn, key, value, true); err != nil {
+			break
+		}
+		if err = c.indexUpdate(index.Path, index, txn, key, value, false); err != nil {
+			break
+		}
+	}
+	if err != nil {
+		return fmt.Errorf("error rebuilding index %s in collection %s in %s: %v", field, collection, d.name, err)
+	}
+	err = txn.Commit(context.Background())
+	if err != nil {
+		return fmt.Errorf("error committing index rebuild transaction: %v", err)
+	}
+	return nil
+}
 
 func (d *DB) ValidateNetRecordBody(_ context.Context, body format.Node, identity thread.PubKey) error {
 	events, err := d.eventcodec.EventsFromBytes(body.RawData())
