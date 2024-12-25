@@ -603,7 +603,7 @@ func (d *DB) RebuildIndex(collection string, field string, uniqueFlag bool) erro
 	if c == nil {
 		return ErrCollectionNotFound
 	}
-	txn, err := d.datastore.NewTransactionExtended(context.Background(), false)
+	txn, err := d.datastore.NewTransactionExtended(context.Background(), true)
 	if err != nil {
 		return fmt.Errorf("error building internal query: %v", err)
 	}
@@ -615,7 +615,24 @@ func (d *DB) RebuildIndex(collection string, field string, uniqueFlag bool) erro
 	}
 	defer iter.Close()
 	index := Index{Path: field, Unique: uniqueFlag}
+	waitCommitCount := 0
+	commitTxn, err := d.datastore.NewTransaction(context.Background(), false)
+	if err != nil {
+		return fmt.Errorf("error building internal query: %v", err)
+	}
+	defer commitTxn.Discard(context.Background())
 	for {
+		if waitCommitCount >= 50 {
+			if err := commitTxn.Commit(context.Background()); err != nil {
+				return fmt.Errorf("error committing index rebuild transaction: %v", err)
+			}
+			commitTxn, err = d.datastore.NewTransaction(context.Background(), false)
+			if err != nil {
+				return fmt.Errorf("error building internal query: %v", err)
+			}
+			waitCommitCount = 0
+			defer commitTxn.Discard(context.Background())
+		}
 		res, ok := iter.NextSync()
 		if !ok {
 			break
@@ -628,13 +645,16 @@ func (d *DB) RebuildIndex(collection string, field string, uniqueFlag bool) erro
 		if err = c.indexUpdate(index.Path, index, txn, key, value, false); err != nil {
 			break
 		}
+		waitCommitCount++
 	}
 	if err != nil {
 		return fmt.Errorf("error rebuilding index %s in collection %s in %s: %v", field, collection, d.name, err)
 	}
-	err = txn.Commit(context.Background())
-	if err != nil {
-		return fmt.Errorf("error committing index rebuild transaction: %v", err)
+	if waitCommitCount > 0 {
+		err = commitTxn.Commit(context.Background())
+		if err != nil {
+			return fmt.Errorf("error committing index rebuild transaction: %v", err)
+		}
 	}
 	return nil
 }
