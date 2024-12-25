@@ -615,46 +615,33 @@ func (d *DB) RebuildIndex(collection string, field string, uniqueFlag bool) erro
 	}
 	defer iter.Close()
 	index := Index{Path: field, Unique: uniqueFlag}
-	waitCommitCount := 0
-	commitTxn, err := d.datastore.NewTransaction(context.Background(), false)
-	if err != nil {
-		return fmt.Errorf("error building internal query: %v", err)
-	}
-	defer commitTxn.Discard(context.Background())
 	for {
-		if waitCommitCount >= 50 {
-			if err := commitTxn.Commit(context.Background()); err != nil {
-				return fmt.Errorf("error committing index rebuild transaction: %v", err)
-			}
-			commitTxn, err = d.datastore.NewTransaction(context.Background(), false)
-			if err != nil {
-				return fmt.Errorf("error building internal query: %v", err)
-			}
-			waitCommitCount = 0
-			defer commitTxn.Discard(context.Background())
-		}
 		res, ok := iter.NextSync()
 		if !ok {
 			break
 		}
 		key := ds.NewKey(res.Key)
 		value := res.Value
-		if err = c.indexUpdate(index.Path, index, txn, key, value, true); err != nil {
-			break
+		commitTxn, err1 := d.datastore.NewTransaction(context.Background(), false)
+		if err1 != nil {
+			return fmt.Errorf("error building internal query: %v", err1)
 		}
-		if err = c.indexUpdate(index.Path, index, txn, key, value, false); err != nil {
-			break
-		}
-		waitCommitCount++
-	}
-	if err != nil {
-		return fmt.Errorf("error rebuilding index %s in collection %s in %s: %v", field, collection, d.name, err)
-	}
-	if waitCommitCount > 0 {
-		err = commitTxn.Commit(context.Background())
+		defer commitTxn.Discard(context.Background())
 		if err != nil {
+			return fmt.Errorf("error building internal query: %v", err)
+		}
+		if err = c.indexUpdate(index.Path, index, commitTxn, key, value, true); err != nil {
+			break
+		}
+		if err = c.indexUpdate(index.Path, index, commitTxn, key, value, false); err != nil {
+			break
+		}
+		if err := commitTxn.Commit(context.Background()); err != nil {
 			return fmt.Errorf("error committing index rebuild transaction: %v", err)
 		}
+	}
+	if err != nil {
+		return fmt.Errorf("error rebuilding index- %s in collection %s in %s: %v", field, collection, d.name, err)
 	}
 	return nil
 }
