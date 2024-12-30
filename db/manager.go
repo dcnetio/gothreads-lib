@@ -12,6 +12,7 @@ import (
 	"github.com/dcnetio/gothreads-lib/core/app"
 	"github.com/dcnetio/gothreads-lib/core/net"
 	"github.com/dcnetio/gothreads-lib/core/thread"
+	sym "github.com/dcnetio/gothreads-lib/crypto/symmetric"
 	kt "github.com/dcnetio/gothreads-lib/db/keytransform"
 	"github.com/dcnetio/gothreads-lib/util"
 	ds "github.com/ipfs/go-datastore"
@@ -406,7 +407,7 @@ func (m *Manager) Close() error {
 }
 
 // ExportDBToFile exports  db state to a file.
-func (m *Manager) ExportDBToFile(ctx context.Context, id thread.ID, path string) error {
+func (m *Manager) ExportDBToFile(ctx context.Context, id thread.ID, path string, readKey *sym.Key) error {
 	log.Debugf("manager: exporting db %s to file %s", id.String(), path)
 	m.lk.RLock()
 	db, ok := m.dbs[id]
@@ -454,7 +455,15 @@ func (m *Manager) ExportDBToFile(ctx context.Context, id thread.ID, path string)
 			return res.Error
 		}
 		record := fmt.Sprintf("%s|%s\n", res.Entry.Key, res.Entry.Value)
-		logfile.Write([]byte(record))
+		enc := []byte(record)
+		// encrypt record if readKey is provided
+		if readKey != nil {
+			enc, err = readKey.Encrypt([]byte(record))
+			if err != nil {
+				return err
+			}
+		}
+		logfile.Write(enc)
 	}
 	return nil
 }
