@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"sync"
 
@@ -400,6 +401,60 @@ func (m *Manager) Close() error {
 		if err := s.Close(); err != nil {
 			log.Error("error when closing manager datastore: %v", err)
 		}
+	}
+	return nil
+}
+
+// ExportDBToFile exports  db state to a file.
+func (m *Manager) ExportDBToFile(ctx context.Context, id thread.ID, path string) error {
+	log.Debugf("manager: exporting db %s to file %s", id.String(), path)
+	m.lk.RLock()
+	db, ok := m.dbs[id]
+	m.lk.RUnlock()
+	if !ok {
+		return ErrDBNotFound
+	}
+	// get current thread state
+	threadInfo, err := m.network.GetThread(ctx, id)
+	if err != nil {
+		return err
+	}
+	logState := ""
+	for i, log := range threadInfo.Logs {
+		identity := thread.NewLibp2pPubKey(log.PubKey)
+		if i == 0 {
+			logState = fmt.Sprintf("%s|%s|%s|%s", log.ID.String(), identity.String(), log.Head.ID.String(), fmt.Sprintf("%d", log.Head.Counter))
+		} else {
+			logState = fmt.Sprintf("%s;%s|%s|%s|%s", logState, log.ID.String(), identity.String(), log.Head.ID.String(), fmt.Sprintf("%d", log.Head.Counter))
+		}
+	}
+	logfile, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		logfile.Close()
+	}()
+	logfile.Write([]byte(logState))
+	logfile.Write([]byte("\n"))
+	// export db state to file
+	q := &Query{}
+	txn, err := db.datastore.NewTransactionExtended(context.Background(), true)
+	if err != nil {
+		return fmt.Errorf("error building internal query: %v", err)
+	}
+	defer txn.Discard(context.Background())
+	i, err := newIterator(txn, baseKey, q)
+	if err != nil {
+		return err
+	}
+	defer i.Close()
+	for res := range i.iter.Next() {
+		if res.Error != nil {
+			return res.Error
+		}
+		record := fmt.Sprintf("%s|%s\n", res.Entry.Key, res.Entry.Value)
+		logfile.Write([]byte(record))
 	}
 	return nil
 }
