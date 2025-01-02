@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/dcnetio/gothreads-lib/core/thread"
+	pb "github.com/dcnetio/gothreads-lib/net/pb"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
@@ -71,6 +72,12 @@ type API interface {
 	// Subscribe returns a read-only channel that receives newly created / added thread records.
 	// Cancelling the context effectively unsubscribes and releases the resources.
 	Subscribe(ctx context.Context, opts ...SubOption) (<-chan ThreadRecord, error)
+
+	// GetPbLogs returns all logs for a thread.
+	GetPbLogs(ctx context.Context, id thread.ID) ([]*pb.Log, thread.Info, error)
+
+	//PreLoadLogs Preload logs for a thread
+	PreLoadLogs(tid thread.ID, logs []*pb.Log) error
 }
 
 // Token is used to restrict network APIs to a single app.App.

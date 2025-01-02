@@ -1774,6 +1774,27 @@ func (n *net) updateLogsFromPeer(ctx context.Context, pid peer.ID, tid thread.ID
 	return n.createExternalLogsIfNotExist(tid, lgs)
 }
 
+// GetPbLogs returns all logs for a thread.
+func (n *net) GetPbLogs(ctx context.Context, tid thread.ID) ([]*pb.Log, thread.Info, error) {
+	info, err := n.store.GetThread(tid)
+	if err != nil {
+		return nil, info, err
+	}
+	logs := make([]*pb.Log, len(info.Logs))
+	for i, info := range info.Logs {
+		logs[i] = logToProto(info)
+	}
+	return logs, info, nil
+}
+
+func (n *net) PreLoadLogs(tid thread.ID, logs []*pb.Log) error {
+	lgs := make([]thread.LogInfo, len(logs))
+	for i, l := range logs {
+		lgs[i] = logFromProto(l)
+	}
+	return n.createExternalLogsIfNotExist(tid, lgs)
+}
+
 // returns offsets and involved peers for all known thread's logs.
 func (n *net) threadOffsets(tid thread.ID) (map[peer.ID]thread.Head, []peer.ID, error) {
 	info, err := n.store.GetThread(tid)

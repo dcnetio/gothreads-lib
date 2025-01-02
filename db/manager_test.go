@@ -221,7 +221,7 @@ func TestManager_GetDB(t *testing.T) {
 		checkErr(t, err)
 
 		// Delete the db, we'll try to restart again
-		err = man.DeleteDB(ctx, id)
+		err = man.DeleteDB(ctx, id, true)
 		checkErr(t, err)
 
 		time.Sleep(time.Second)
@@ -275,7 +275,7 @@ func TestManager_DeleteDB(t *testing.T) {
 
 	time.Sleep(time.Second)
 
-	err = man.DeleteDB(ctx, id)
+	err = man.DeleteDB(ctx, id, true)
 	checkErr(t, err)
 
 	_, err = man.GetDB(ctx, id)

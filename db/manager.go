@@ -1,6 +1,7 @@
 package db
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
@@ -14,12 +15,14 @@ import (
 	"github.com/dcnetio/gothreads-lib/core/thread"
 	sym "github.com/dcnetio/gothreads-lib/crypto/symmetric"
 	kt "github.com/dcnetio/gothreads-lib/db/keytransform"
+	pb "github.com/dcnetio/gothreads-lib/net/pb"
 	"github.com/dcnetio/gothreads-lib/util"
 	ds "github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/keytransform"
 	"github.com/ipfs/go-datastore/query"
 	logging "github.com/ipfs/go-log/v2"
 	ma "github.com/multiformats/go-multiaddr"
+	"github.com/multiformats/go-multibase"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -323,7 +326,7 @@ func (m *Manager) GetDB(ctx context.Context, id thread.ID, opts ...ManagedOption
 }
 
 // DeleteDB deletes a db by id.
-func (m *Manager) DeleteDB(ctx context.Context, id thread.ID, opts ...ManagedOption) error {
+func (m *Manager) DeleteDB(ctx context.Context, id thread.ID, deleteThreadFlag bool, opts ...ManagedOption) error {
 	log.Debugf("manager: deleting db %s", id)
 	args := &ManagedOptions{}
 	for _, opt := range opts {
@@ -346,17 +349,19 @@ func (m *Manager) DeleteDB(ctx context.Context, id thread.ID, opts ...ManagedOpt
 	if err := db.Close(); err != nil {
 		return err
 	}
-	log.Debugf("manager: deleting thread %s from net", id)
-	if err := m.network.DeleteThread(
-		ctx,
-		id,
-		net.WithThreadToken(args.Token),
-		net.WithAPIToken(db.connector.Token()),
-	); err != nil {
-		return err
-	}
-	log.Debugf("manager: deleted thread %s from net", id)
 
+	if deleteThreadFlag {
+		log.Debugf("manager: deleting thread %s from net", id)
+		if err := m.network.DeleteThread(
+			ctx,
+			id,
+			net.WithThreadToken(args.Token),
+			net.WithAPIToken(db.connector.Token()),
+		); err != nil {
+			return err
+		}
+		log.Debugf("manager: deleted thread %s from net", id)
+	}
 	// Cleanup keys used by the db
 	if err := id.Validate(); err != nil {
 		return err
@@ -406,66 +411,242 @@ func (m *Manager) Close() error {
 	return nil
 }
 
-// ExportDBToFile exports  db state to a file.
-func (m *Manager) ExportDBToFile(ctx context.Context, id thread.ID, path string, readKey *sym.Key) error {
+// ExportDBToFile exports  db state to a file. first line of the file contains the thread state. Each subsequent line contains a record in the db.
+func (m *Manager) ExportDBToFile(ctx context.Context, id thread.ID, path string, readKey *sym.Key) (threadInfo thread.Info, err error) {
 	log.Debugf("manager: exporting db %s to file %s", id.String(), path)
+	m.lk.RLock()
+	db, ok := m.dbs[id]
+	m.lk.RUnlock()
+	if !ok {
+		return thread.Info{}, ErrDBNotFound
+	}
+	logState := ""
+	logs, threadInfo, err := m.network.GetPbLogs(ctx, id)
+	if err != nil {
+		return thread.Info{}, err
+	}
+	for i, log := range logs {
+		mbaseLog, err := multibase.Encode(multibase.Base64, []byte(log.String()))
+		if err != nil {
+			return thread.Info{}, err
+		}
+		if i == 0 {
+			logState = mbaseLog
+		} else {
+			logState = fmt.Sprintf("%s;%s", logState, mbaseLog)
+		}
+	}
+	logfile, err := os.Create(path)
+	if err != nil {
+		return thread.Info{}, err
+	}
+	defer func() {
+		logfile.Close()
+	}()
+	logfile.Write([]byte(logState))
+	// export db state to file
+	q := &Query{}
+	txn, err := db.datastore.NewTransactionExtended(context.Background(), true)
+	if err != nil {
+		return thread.Info{}, fmt.Errorf("error building internal query: %v", err)
+	}
+	defer txn.Discard(context.Background())
+	i, err := newIterator(txn, baseKey, q)
+	if err != nil {
+		return thread.Info{}, err
+	}
+	defer i.Close()
+	for res := range i.iter.Next() {
+		if res.Error != nil {
+			return thread.Info{}, res.Error
+		}
+		// encode value with multibase
+		mValue, err := multibase.Encode(multibase.Base64, res.Entry.Value)
+		if err != nil {
+			return thread.Info{}, err
+		}
+		record := fmt.Sprintf("%s|%s", res.Entry.Key, mValue)
+		enc := []byte(record)
+		// encrypt record if readKey is provided
+		if readKey != nil {
+			enc, err = readKey.Encrypt([]byte(record))
+			if err != nil {
+				return thread.Info{}, err
+			}
+		}
+		logfile.Write([]byte("\n"))
+		logfile.Write(enc)
+
+	}
+	return threadInfo, nil
+}
+
+func (m *Manager) PreloadDBFromReader(ctx context.Context, ioReader io.Reader, addr ma.Multiaddr, key thread.Key, opts ...NewManagedOption) error {
+	log.Debug("manager: preloading db from reader")
+	id, err := thread.FromAddr(addr)
+	if err != nil {
+		return err
+	}
+	m.lk.RLock()
+	_, ok := m.dbs[id]
+	m.lk.RUnlock()
+	if ok {
+		return ErrDBExists
+	}
+	args := &NewManagedOptions{}
+	for _, opt := range opts {
+		opt(args)
+	}
+	if args.Name != "" && !nameRx.MatchString(args.Name) { // Pre-check name
+		return ErrInvalidName
+	}
+
+	if key.Defined() && !key.CanRead() {
+		return ErrThreadReadKeyRequired
+	}
+	log.Debugf("manager: adding thread to net %s", id)
+	if _, err = m.network.AddThread(
+		ctx,
+		addr,
+		net.WithThreadKey(key),
+		net.WithLogKey(args.LogKey),
+		net.WithNewThreadToken(args.Token),
+	); err != nil {
+		return err
+	}
+	log.Debugf("manager: added thread to net %s ", id)
+
+	store, dbOpts, err := wrapDB(m.store, id, m.opts, args.Name, args.Collections...)
+	if err != nil {
+		return err
+	}
+	db, err := newDB(store, m.network, id, dbOpts)
+	if err != nil {
+		return err
+	}
+	m.lk.Lock()
+	m.dbs[id] = db
+	m.lk.Unlock()
+	// Import db status
+	readKey := key.Read()
+	if readKey == nil {
+		return fmt.Errorf("read key not found for thread %s", id)
+	}
+	reader := bufio.NewReader(ioReader)
+	//Read the first line and update the log head of threadInfo
+	stateValue, err := ReadLine(reader)
+	if err != nil {
+		return err
+	}
+	// Update the log head of threadInfo
+	logs := strings.Split(string(stateValue), ";")
+	pbLogs := make([]*pb.Log, len(logs))
+	for _, log := range logs {
+		_, dec, err := multibase.Decode(log)
+		if err != nil {
+			return err
+		}
+		pbLog := &pb.Log{}
+		if err := pbLog.Unmarshal([]byte(dec)); err != nil {
+			return err
+		}
+		pbLogs = append(pbLogs, pbLog)
+	}
+	if err := m.network.PreLoadLogs(id, pbLogs); err != nil {
+		m.DeleteDB(ctx, id, false)
+		return err
+	}
+	// Import db state
+	if err := m.importDBStateFromReader(id, reader, readKey); err != nil {
+		m.DeleteDB(ctx, id, false)
+		return err
+	}
+	return nil
+
+}
+
+func (m *Manager) importDBStateFromReader(id thread.ID, r *bufio.Reader, readKey *sym.Key) error {
+	log.Debug("manager: importing db state from reader ")
 	m.lk.RLock()
 	db, ok := m.dbs[id]
 	m.lk.RUnlock()
 	if !ok {
 		return ErrDBNotFound
 	}
-	// get current thread state
-	threadInfo, err := m.network.GetThread(ctx, id)
-	if err != nil {
-		return err
-	}
-	logState := ""
-	for i, log := range threadInfo.Logs {
-		identity := thread.NewLibp2pPubKey(log.PubKey)
-		if i == 0 {
-			logState = fmt.Sprintf("%s|%s|%s|%s", log.ID.String(), identity.String(), log.Head.ID.String(), fmt.Sprintf("%d", log.Head.Counter))
-		} else {
-			logState = fmt.Sprintf("%s;%s|%s|%s|%s", logState, log.ID.String(), identity.String(), log.Head.ID.String(), fmt.Sprintf("%d", log.Head.Counter))
+
+	indexFunc := defaultIndexFunc(db)
+	for {
+		txn, err := db.datastore.NewTransactionExtended(context.Background(), false)
+		if err != nil {
+			return fmt.Errorf("error building internal query: %v", err)
 		}
-	}
-	logfile, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		logfile.Close()
-	}()
-	logfile.Write([]byte(logState))
-	logfile.Write([]byte("\n"))
-	// export db state to file
-	q := &Query{}
-	txn, err := db.datastore.NewTransactionExtended(context.Background(), true)
-	if err != nil {
-		return fmt.Errorf("error building internal query: %v", err)
-	}
-	defer txn.Discard(context.Background())
-	i, err := newIterator(txn, baseKey, q)
-	if err != nil {
-		return err
-	}
-	defer i.Close()
-	for res := range i.iter.Next() {
-		if res.Error != nil {
-			return res.Error
+		defer txn.Discard(context.Background())
+		var key, mValue string
+		encValue, err := ReadLine(r)
+		if err == io.EOF {
+			break
 		}
-		record := fmt.Sprintf("%s|%s\n", res.Entry.Key, res.Entry.Value)
-		enc := []byte(record)
-		// encrypt record if readKey is provided
+		// decrypt record if readKey is provided
+		dec := []byte(encValue)
 		if readKey != nil {
-			enc, err = readKey.Encrypt([]byte(record))
+			dec, err = readKey.Decrypt([]byte(encValue))
 			if err != nil {
 				return err
 			}
 		}
-		logfile.Write(enc)
+		//解析key和value
+		kv := strings.Split(string(dec), "|")
+		if len(kv) == 2 {
+			key = kv[0]
+			mValue = kv[1]
+		} else {
+			return err
+		}
+		// decode value with multibase
+		_, value, err := multibase.Decode(mValue)
+		if err != nil {
+			return err
+		}
+		setKey := ds.NewKey(key)
+		exist, err := txn.Has(context.Background(), setKey)
+		if err != nil {
+			return err
+		}
+		if exist {
+			continue
+		}
+		if err := txn.Put(context.Background(), setKey, value); err != nil {
+			return err
+		}
+		//key 中提取出collection,倒数第二个是collection
+		parts := strings.Split(key, "/")
+		if len(parts) < 2 {
+			return err
+		}
+		collection := parts[len(parts)-2]
+		if err := indexFunc(collection, setKey, nil, value, txn); err != nil {
+			return err
+		}
+		if err := txn.Commit(context.Background()); err != nil {
+			return err
+		}
 	}
 	return nil
+}
+
+func ReadLine(r *bufio.Reader) ([]byte, error) {
+	var (
+		isPrefix = true
+		err      error
+		line, ln []byte
+	)
+
+	for isPrefix && err == nil {
+		line, isPrefix, err = r.ReadLine()
+		ln = append(ln, line...)
+	}
+
+	return ln, err
 }
 
 // wrapDB copies the manager's base config,

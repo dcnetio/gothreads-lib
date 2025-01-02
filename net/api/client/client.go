@@ -14,6 +14,7 @@ import (
 	"github.com/dcnetio/gothreads-lib/crypto/symmetric"
 	"github.com/dcnetio/gothreads-lib/net"
 	pb "github.com/dcnetio/gothreads-lib/net/api/pb"
+	netpb "github.com/dcnetio/gothreads-lib/net/pb"
 	"github.com/dcnetio/gothreads-lib/net/util"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
@@ -331,6 +332,14 @@ func (c *Client) Subscribe(ctx context.Context, opts ...core.SubOption) (<-chan 
 		}
 	}()
 	return channel, nil
+}
+
+func (c *Client) GetPbLogs(ctx context.Context, id thread.ID) ([]*netpb.Log, thread.Info, error) {
+	return []*netpb.Log{}, thread.Info{}, nil
+}
+
+func (c *Client) PreLoadLogs(tid thread.ID, logs []*netpb.Log) error {
+	return nil
 }
 
 func getThreadKeys(args *core.NewThreadOptions) (*pb.Keys, error) {
