@@ -411,6 +411,19 @@ func (m *Manager) Close() error {
 	return nil
 }
 
+// GetDBRecordsCount returns the number of records in the db.
+func (m *Manager) GetDBRecordsCount(ctx context.Context, tid thread.ID) (uint64, error) {
+	info, err := m.network.GetThread(ctx, tid)
+	if err != nil {
+		return 0, err
+	}
+	count := uint64(0)
+	for _, log := range info.Logs {
+		count += uint64(log.Head.Counter)
+	}
+	return count, nil
+}
+
 // ExportDBToFile exports  db state to a file. first line of the file contains the thread state. Each subsequent line contains a record in the db.
 func (m *Manager) ExportDBToFile(ctx context.Context, id thread.ID, path string, readKey *sym.Key) (threadInfo thread.Info, err error) {
 	log.Debugf("manager: exporting db %s to file %s", id.String(), path)
