@@ -14,7 +14,6 @@ import (
 	ds "github.com/ipfs/go-datastore"
 	dsq "github.com/ipfs/go-datastore/query"
 	logger "github.com/ipfs/go-log/v2"
-	goprocess "github.com/jbenet/goprocess"
 	"go.uber.org/zap"
 )
 
@@ -743,18 +742,152 @@ func (t *txn) query(q dsextensions.QueryExt) (dsq.Results, error) {
 	}
 
 	it := t.txn.NewIterator(opt)
-	qrb := dsq.NewResultBuilder(q.Query)
-	qrb.Process.Go(func(worker goprocess.Process) {
+	// qrb := dsq.NewResultBuilder(q.Query)
+
+	// qrb.Process.Go(func(worker goprocess.Process) {
+	// 	t.ds.closeLk.RLock()
+	// 	closedEarly := false
+	// 	defer func() {
+	// 		t.ds.closeLk.RUnlock()
+	// 		if closedEarly {
+	// 			select {
+	// 			case qrb.Output <- dsq.Result{
+	// 				Error: ErrClosed,
+	// 			}:
+	// 			case <-qrb.Process.Closing():
+	// 			}
+	// 		}
+
+	// 	}()
+	// 	if t.ds.closed {
+	// 		closedEarly = true
+	// 		return
+	// 	}
+
+	// 	// this iterator is part of an implicit transaction, so when
+	// 	// we're done we must discard the transaction. It's safe to
+	// 	// discard the txn it because it contains the iterator only.
+	// 	if t.implicit {
+	// 		defer t.discard()
+	// 	}
+
+	// 	defer it.Close()
+
+	// 	// All iterators must be started by rewinding.
+	// 	it.Rewind()
+
+	// 	// Seek to seek prefix if needed.
+	// 	if q.SeekPrefix != "" {
+	// 		it.Seek([]byte(q.SeekPrefix))
+	// 	}
+
+	// 	// skip to the offset
+	// 	for skipped := 0; skipped < q.Offset && it.Valid(); it.Next() {
+	// 		// On the happy path, we have no filters and we can go
+	// 		// on our way.
+	// 		if len(q.Filters) == 0 {
+	// 			skipped++
+	// 			continue
+	// 		}
+
+	// 		// On the sad path, we need to apply filters before
+	// 		// counting the item as "skipped" as the offset comes
+	// 		// _after_ the filter.
+	// 		item := it.Item()
+
+	// 		matches := true
+	// 		check := func(value []byte) error {
+	// 			e := dsq.Entry{
+	// 				Key:   string(item.Key()),
+	// 				Value: value,
+	// 				Size:  int(item.ValueSize()), // this function is basically free
+	// 			}
+
+	// 			// Only calculate expirations if we need them.
+	// 			if q.ReturnExpirations {
+	// 				e.Expiration = expires(item)
+	// 			}
+	// 			matches = filter(q.Filters, e)
+	// 			return nil
+	// 		}
+
+	// 		// Maybe check with the value, only if we need it.
+	// 		var err error
+	// 		if q.KeysOnly {
+	// 			err = check(nil)
+	// 		} else {
+	// 			err = item.Value(check)
+	// 		}
+
+	// 		if err != nil {
+	// 			select {
+	// 			case qrb.Output <- dsq.Result{Error: err}:
+	// 			case <-t.ds.closing: // datastore closing.
+	// 				closedEarly = true
+	// 				return
+	// 			case <-worker.Closing(): // client told us to close early
+	// 				return
+	// 			}
+	// 		}
+	// 		if !matches {
+	// 			skipped++
+	// 		}
+	// 	}
+
+	// 	for sent := 0; (q.Limit <= 0 || sent < q.Limit) && it.Valid(); it.Next() {
+	// 		item := it.Item()
+	// 		e := dsq.Entry{Key: string(item.Key())}
+
+	// 		// Maybe get the value
+	// 		var result dsq.Result
+	// 		if !q.KeysOnly {
+	// 			b, err := item.ValueCopy(nil)
+	// 			if err != nil {
+	// 				result = dsq.Result{Error: err}
+	// 			} else {
+	// 				e.Value = b
+	// 				e.Size = len(b)
+	// 				result = dsq.Result{Entry: e}
+	// 			}
+	// 		} else {
+	// 			e.Size = int(item.ValueSize())
+	// 			result = dsq.Result{Entry: e}
+	// 		}
+
+	// 		if q.ReturnExpirations {
+	// 			result.Expiration = expires(item)
+	// 		}
+
+	// 		// Finally, filter it (unless we're dealing with an error).
+	// 		if result.Error == nil && filter(q.Filters, e) {
+	// 			continue
+	// 		}
+
+	// 		select {
+	// 		case qrb.Output <- result:
+	// 			sent++
+	// 		case <-t.ds.closing: // datastore closing.
+	// 			closedEarly = true
+	// 			return
+	// 		case <-worker.Closing(): // client told us to close early
+	// 			return
+	// 		}
+	// 	}
+	// })
+
+	//go qrb.Process.CloseAfterChildren() //nolint
+	//return qrb.Results(), nil
+	proc := func(ctx context.Context, output chan<- dsq.Result) {
 		t.ds.closeLk.RLock()
 		closedEarly := false
 		defer func() {
 			t.ds.closeLk.RUnlock()
 			if closedEarly {
 				select {
-				case qrb.Output <- dsq.Result{
+				case output <- dsq.Result{
 					Error: ErrClosed,
 				}:
-				case <-qrb.Process.Closing():
+				case <-ctx.Done():
 				}
 			}
 
@@ -821,11 +954,11 @@ func (t *txn) query(q dsextensions.QueryExt) (dsq.Results, error) {
 
 			if err != nil {
 				select {
-				case qrb.Output <- dsq.Result{Error: err}:
+				case output <- dsq.Result{Error: err}:
 				case <-t.ds.closing: // datastore closing.
 					closedEarly = true
 					return
-				case <-worker.Closing(): // client told us to close early
+				case <-ctx.Done(): // client told us to close early
 					return
 				}
 			}
@@ -864,20 +997,18 @@ func (t *txn) query(q dsextensions.QueryExt) (dsq.Results, error) {
 			}
 
 			select {
-			case qrb.Output <- result:
+			case output <- result:
 				sent++
 			case <-t.ds.closing: // datastore closing.
 				closedEarly = true
 				return
-			case <-worker.Closing(): // client told us to close early
+			case <-ctx.Done(): // client told us to close early
 				return
 			}
 		}
-	})
-
-	go qrb.Process.CloseAfterChildren() //nolint
-
-	return qrb.Results(), nil
+	}
+	results := dsq.ResultsWithContext(q.Query, proc)
+	return results, nil
 }
 
 func (t *txn) Commit(_ context.Context) error {

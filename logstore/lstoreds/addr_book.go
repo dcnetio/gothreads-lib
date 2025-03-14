@@ -177,7 +177,7 @@ func (ab *DsAddrBook) Addrs(t thread.ID, p peer.ID) ([]ma.Multiaddr, error) {
 	defer pr.RUnlock()
 	addrs := make([]ma.Multiaddr, 0, len(pr.Addrs))
 	for _, a := range pr.Addrs {
-		addrs = append(addrs, a.Addr)
+		addrs = append(addrs, a.Addr.Multiaddr)
 	}
 	return addrs, nil
 }
@@ -251,7 +251,7 @@ func (ab *DsAddrBook) AddrsEdge(t thread.ID) (uint64, error) {
 				// invariant: no address duplicates for the peer
 				as = append(as, util.PeerAddr{
 					PeerID: pid,
-					Addr:   addrRec.Addrs[i].Addr,
+					Addr:   addrRec.Addrs[i].Addr.Multiaddr,
 				})
 			}
 		}
@@ -415,7 +415,7 @@ func (ab *DsAddrBook) setAddrs(t thread.ID, p peer.ID, addrs []ma.Multiaddr, ttl
 Outer:
 	for i, incoming := range addrs {
 		for _, have := range pr.Addrs {
-			if incoming.Equal(have.Addr) {
+			if incoming.Equal(have.Addr.Multiaddr) {
 				existed[i] = true
 				switch mode {
 				case ttlOverride:
@@ -543,7 +543,7 @@ func (ab *DsAddrBook) DumpAddrs() (logstore.DumpAddrBook, error) {
 				for i := 0; i < len(rec.Addrs); i++ {
 					var r = rec.Addrs[i]
 					addrs[i] = logstore.ExpiredAddress{
-						Addr:    r.Addr,
+						Addr:    r.Addr.Multiaddr,
 						Expires: time.Unix(r.Expiry, 0),
 					}
 				}
