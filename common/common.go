@@ -222,7 +222,7 @@ func setDefaults(config *NetConfig) (err error) {
 		config.MongoDB = "threadnet"
 	}
 	if config.NetPullingLimit <= 0 {
-		config.NetPullingLimit = 10000
+		config.NetPullingLimit = 1000
 	}
 	if config.NetPullingStartAfter <= 0 {
 		config.NetPullingStartAfter = time.Second

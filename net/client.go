@@ -155,11 +155,7 @@ func (s *server) getRecords(
 		wg.Wait()
 		close(getted)
 	}()
-
-	select {
-	case <-getted:
-	case <-time.After(PullTimeout * 2):
-	}
+	<-getted
 
 	return rc.List()
 }
@@ -220,7 +216,7 @@ func (s *server) getRecordsFromPeer(
 	}
 
 	recs := make(map[peer.ID]peerRecords)
-	cctx, cancel := context.WithTimeout(ctx, PullTimeout)
+	cctx, cancel := context.WithTimeout(ctx, PullTimeout*5)
 	defer cancel()
 	reply, err := client.GetRecords(cctx, req)
 	if err != nil {
