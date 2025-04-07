@@ -1678,6 +1678,31 @@ func (n *net) createExternalLogsIfNotExist(
 	return nil
 }
 
+func (n *net) createExternalLogsIfNotExistForPreload(
+	tid thread.ID,
+	lis []thread.LogInfo,
+) error {
+	ts := n.semaphores.Get(semaThreadUpdate(tid))
+	ts.Acquire()
+	defer ts.Release()
+
+	for _, li := range lis {
+		if currHeads, err := n.Store().Heads(tid, li.ID); err != nil {
+			return err
+		} else if len(currHeads) == 0 {
+			if err = n.Store().AddLog(tid, li); err != nil {
+				return err
+			}
+		} else {
+			// update log addresses
+			if err = n.Store().AddAddrs(tid, li.ID, li.Addrs, pstore.PermanentAddrTTL); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 // ensureUniqueLog returns a non-nil error if a log with key already exists,
 // or if a log for identity already exists for the given thread.
 func (n *net) ensureUniqueLog(id thread.ID, key crypto.Key, identity thread.PubKey) (err error) {
@@ -1787,12 +1812,12 @@ func (n *net) GetPbLogs(ctx context.Context, tid thread.ID) ([]*pb.Log, thread.I
 	return logs, info, nil
 }
 
-func (n *net) PreLoadLogs(tid thread.ID, logs []*pb.Log) error {
+func (n *net) PreLoadLogs(tid thread.ID, logs []pb.Log) error {
 	lgs := make([]thread.LogInfo, len(logs))
 	for i, l := range logs {
-		lgs[i] = logFromProto(l)
+		lgs[i] = logFromProto(&l)
 	}
-	return n.createExternalLogsIfNotExist(tid, lgs)
+	return n.createExternalLogsIfNotExistForPreload(tid, lgs)
 }
 
 // returns offsets and involved peers for all known thread's logs.

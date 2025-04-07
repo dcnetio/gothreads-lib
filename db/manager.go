@@ -17,6 +17,7 @@ import (
 	kt "github.com/dcnetio/gothreads-lib/db/keytransform"
 	pb "github.com/dcnetio/gothreads-lib/net/pb"
 	"github.com/dcnetio/gothreads-lib/util"
+	proto "github.com/gogo/protobuf/proto"
 	ds "github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/keytransform"
 	"github.com/ipfs/go-datastore/query"
@@ -473,19 +474,27 @@ func (m *Manager) ExportDBToFile(ctx context.Context, id thread.ID, path string,
 		if res.Error != nil {
 			return thread.Info{}, res.Error
 		}
-		// encode value with multibase
-		mValue, err := multibase.Encode(multibase.Base64, res.Entry.Value)
-		if err != nil {
-			return thread.Info{}, err
-		}
-		record := fmt.Sprintf("%s|%s", res.Entry.Key, mValue)
-		enc := []byte(record)
+		var enc []byte
 		// encrypt record if readKey is provided
 		if readKey != nil {
-			enc, err = readKey.Encrypt([]byte(record))
+			encBytes, err := readKey.Encrypt(res.Entry.Value)
 			if err != nil {
 				return thread.Info{}, err
 			}
+			mValue, err := multibase.Encode(multibase.Base64, encBytes)
+			if err != nil {
+				return thread.Info{}, err
+			}
+			record := fmt.Sprintf("%s|%s", res.Entry.Key, mValue)
+			enc = []byte(record)
+		} else {
+			// encode value with multibase
+			mValue, err := multibase.Encode(multibase.Base64, res.Entry.Value)
+			if err != nil {
+				return thread.Info{}, err
+			}
+			record := fmt.Sprintf("%s|%s", res.Entry.Key, mValue)
+			enc = []byte(record)
 		}
 		logfile.Write([]byte("\n"))
 		logfile.Write(enc)
@@ -551,17 +560,20 @@ func (m *Manager) PreloadDBFromReader(ctx context.Context, ioReader io.Reader, a
 	if err != nil {
 		return err
 	}
+	//移除头部32位hash
+	stateValue = stateValue[32:]
 	// Update the log head of threadInfo
 	logs := strings.Split(string(stateValue), ";")
-	pbLogs := make([]*pb.Log, len(logs))
+	pbLogs := make([]pb.Log, 0)
 	for _, log := range logs {
 		_, dec, err := multibase.Decode(log)
 		if err != nil {
 			return err
 		}
-		pbLog := &pb.Log{}
-		if err := pbLog.Unmarshal([]byte(dec)); err != nil {
-			return err
+		pbLog := pb.Log{}
+
+		if err := proto.UnmarshalText(string(dec), &pbLog); err != nil {
+			continue
 		}
 		pbLogs = append(pbLogs, pbLog)
 	}
@@ -595,20 +607,12 @@ func (m *Manager) importDBStateFromReader(id thread.ID, r *bufio.Reader, readKey
 		}
 		defer txn.Discard(context.Background())
 		var key, mValue string
-		encValue, err := ReadLine(r)
+		record, err := ReadLine(r)
 		if err == io.EOF {
 			break
 		}
-		// decrypt record if readKey is provided
-		dec := []byte(encValue)
-		if readKey != nil {
-			dec, err = readKey.Decrypt([]byte(encValue))
-			if err != nil {
-				return err
-			}
-		}
 		//解析key和value
-		kv := strings.Split(string(dec), "|")
+		kv := strings.Split(string(record), "|")
 		if len(kv) == 2 {
 			key = kv[0]
 			mValue = kv[1]
@@ -616,9 +620,17 @@ func (m *Manager) importDBStateFromReader(id thread.ID, r *bufio.Reader, readKey
 			return err
 		}
 		// decode value with multibase
-		_, value, err := multibase.Decode(mValue)
+		_, encValue, err := multibase.Decode(mValue)
 		if err != nil {
 			return err
+		}
+		decValue := encValue
+		// decrypt record if readKey is provided
+		if readKey != nil {
+			decValue, err = readKey.Decrypt([]byte(encValue))
+			if err != nil {
+				return err
+			}
 		}
 		setKey := ds.NewKey(key)
 		exist, err := txn.Has(context.Background(), setKey)
@@ -628,7 +640,7 @@ func (m *Manager) importDBStateFromReader(id thread.ID, r *bufio.Reader, readKey
 		if exist {
 			continue
 		}
-		if err := txn.Put(context.Background(), setKey, value); err != nil {
+		if err := txn.Put(context.Background(), setKey, decValue); err != nil {
 			return err
 		}
 		//key 中提取出collection,倒数第二个是collection
@@ -637,7 +649,7 @@ func (m *Manager) importDBStateFromReader(id thread.ID, r *bufio.Reader, readKey
 			return err
 		}
 		collection := parts[len(parts)-2]
-		if err := indexFunc(collection, setKey, nil, value, txn); err != nil {
+		if err := indexFunc(collection, setKey, nil, decValue, txn); err != nil {
 			return err
 		}
 		if err := txn.Commit(context.Background()); err != nil {

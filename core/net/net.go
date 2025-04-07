@@ -77,7 +77,7 @@ type API interface {
 	GetPbLogs(ctx context.Context, id thread.ID) ([]*pb.Log, thread.Info, error)
 
 	//PreLoadLogs Preload logs for a thread
-	PreLoadLogs(tid thread.ID, logs []*pb.Log) error
+	PreLoadLogs(tid thread.ID, logs []pb.Log) error
 }
 
 // Token is used to restrict network APIs to a single app.App.

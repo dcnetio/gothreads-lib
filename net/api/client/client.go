@@ -338,7 +338,7 @@ func (c *Client) GetPbLogs(ctx context.Context, id thread.ID) ([]*netpb.Log, thr
 	return []*netpb.Log{}, thread.Info{}, nil
 }
 
-func (c *Client) PreLoadLogs(tid thread.ID, logs []*netpb.Log) error {
+func (c *Client) PreLoadLogs(tid thread.ID, logs []netpb.Log) error {
 	return nil
 }
 
