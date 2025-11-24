@@ -231,6 +231,13 @@ func ComputeHeadsEdge(hs []LogHead) uint64 {
 		}
 		return hs[i].LogID < hs[j].LogID
 	})
+	//移除head中counter为0的情况
+	for i := 0; i < len(hs); i++ {
+		if hs[i].Head.Counter == 0 {
+			hs = append(hs[:i], hs[i+1:]...)
+			i--
+		}
+	}
 	hasher := fnv.New64a()
 	for i := 0; i < len(hs); i++ {
 		_, _ = hasher.Write([]byte(hs[i].LogID))
