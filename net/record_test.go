@@ -2,12 +2,12 @@ package net
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"strings"
 	"testing"
 
 	util "github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
-	"golang.org/x/exp/rand"
 )
 
 type mockRecord struct {
