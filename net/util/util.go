@@ -29,6 +29,7 @@ func RecToServiceRec(r *apipb.Record) *netpb.Log_Record {
 
 // LogToProto returns a proto log from a thread log.
 func LogToProto(l thread.LogInfo) *netpb.Log {
+
 	return &netpb.Log{
 		ID:      &netpb.ProtoPeerID{ID: l.ID},
 		PubKey:  &netpb.ProtoPubKey{PubKey: l.PubKey},
@@ -40,14 +41,19 @@ func LogToProto(l thread.LogInfo) *netpb.Log {
 
 // LogFromProto returns a thread log from a proto log.
 func LogFromProto(l *netpb.Log) thread.LogInfo {
+	head := thread.Head{
+		Counter: l.Counter,
+	}
+	if l.Head != nil {
+		head.ID = l.Head.Cid
+	} else {
+		head.ID = thread.HeadUndef.ID
+	}
 	return thread.LogInfo{
 		ID:     l.ID.ID,
 		PubKey: l.PubKey.PubKey,
 		Addrs:  AddrsFromProto(l.Addrs),
-		Head: thread.Head{
-			ID:      l.Head.Cid,
-			Counter: l.Counter,
-		},
+		Head:   head,
 	}
 }
 
